@@ -39,6 +39,114 @@ Definition of Done provides clear completion criteria for different task types. 
 
 ---
 
+## CRITICAL: Implementation Plan Template
+
+**MANDATORY**: When creating an implementation plan for ANY coding task, you MUST include DoD verification as explicit tasks.
+
+### Why This Matters
+
+**Problem**: Bots create implementation plans from task description only:
+- Task: "Implement feature X"
+- Plan: "1. Write code, 2. Add tests, 3. Create PR"
+- **Missing**: DoD verification steps
+
+**Result**: Bot completes plan, thinks "done", hasn't verified DoD
+
+**Solution**: DoD verification must be explicit tasks in every implementation plan
+
+### Implementation Plan Template
+
+```markdown
+## Implementation Plan
+
+### Feature Tasks
+1. [Feature-specific task 1]
+2. [Feature-specific task 2]
+3. [Feature-specific task 3]
+...
+
+### Definition of Done Verification (MANDATORY - Always Include)
+N. Run linting: `ruff format . && ruff check .`
+N+1. Run type checking: `mypy src/`
+N+2. Run all tests: `pytest`
+N+3. Verify coverage ≥80%: `pytest --cov=src --cov-fail-under=80`
+N+4. Run pre-commit hooks: `pre-commit run --all-files`
+N+5. Verify type hints present (all new functions)
+N+6. Verify docstrings present (all new functions)
+N+7. Identify integration tests needed (or create follow-up issue)
+N+8. Update documentation (if interfaces changed)
+
+### Completion
+N+9. Create PR with verification results
+```
+
+### Bot Instructions
+
+**When receiving coding task**:
+1. Read task description
+2. Break down into feature-specific tasks
+3. **ALWAYS append DoD verification tasks** (use template above)
+4. Add final task: "Create PR"
+5. Use TodoWrite to track all tasks (including DoD)
+
+**Do NOT**:
+- ❌ Create plan without DoD verification tasks
+- ❌ Mark task "done" before DoD verification complete
+- ❌ Create PR before all DoD tasks pass
+
+**Example**:
+
+User: "Add user authentication feature"
+
+Bot creates plan:
+```
+## Implementation Plan
+
+### Feature Tasks
+1. Design authentication flow
+2. Implement login endpoint
+3. Implement logout endpoint
+4. Add authentication middleware
+5. Write unit tests for auth functions
+
+### Definition of Done Verification
+6. Run linting: ruff format . && ruff check .
+7. Run type checking: mypy src/
+8. Run all tests: pytest
+9. Verify coverage ≥80%: pytest --cov=src --cov-fail-under=80
+10. Run pre-commit hooks: pre-commit run --all-files
+11. Verify type hints present (all new functions)
+12. Verify docstrings present (all new functions)
+13. Identify integration tests needed (auth flow end-to-end)
+14. Update API documentation (new endpoints)
+
+### Completion
+15. Create PR with verification results
+```
+
+Bot executes tasks 1-15 sequentially, marking each complete as it passes.
+
+### Validation
+
+**Test your bot follows this template**:
+
+```
+Give bot task: "Add export feature"
+
+Expected plan includes:
+✅ Feature tasks (1-N)
+✅ DoD verification tasks (N+1 through N+8)
+✅ Create PR (N+9)
+
+Bot execution:
+✅ Completes feature tasks
+✅ Runs each DoD verification task
+✅ Fixes any failures and re-runs
+✅ Only creates PR after all DoD tasks pass
+```
+
+---
+
 ## DoD by Task Type
 
 ### Coding Tasks
