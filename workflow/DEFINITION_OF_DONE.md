@@ -76,8 +76,13 @@ N+6. Verify docstrings present (all new functions)
 N+7. Identify integration tests needed (or create follow-up issue)
 N+8. Update documentation (if interfaces changed)
 
-### Completion
+### Completion (CRITICAL - Task NOT Done Until This Step)
 N+9. Create PR with verification results
+N+10. Get PR approved (if required)
+N+11. Merge PR to main
+N+12. **Verify merged code pushed to main** (git pull origin main shows your changes)
+
+**CRITICAL**: A feature is NOT "done" until it is merged and pushed to main. Code that exists only in a PR or local branch is NOT done.
 ```
 
 ### Bot Instructions
@@ -167,6 +172,11 @@ Bot execution:
 - [ ] **Imports resolve** (no sys.path manipulation)
 - [ ] **No excessive mocking** (only external dependencies)
 - [ ] **Documentation updated** (if interfaces changed)
+- [ ] **PR created and reviewed** (if required by project)
+- [ ] **PR merged to main** (code is in main branch)
+- [ ] **VERIFIED code pushed to main** (git pull origin main shows your changes)
+
+**CRITICAL**: Task is NOT "done" until code is merged and pushed to main. Code in PR or local branch = NOT DONE.
 
 **Verification Commands**:
 ```bash
