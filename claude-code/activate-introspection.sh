@@ -324,8 +324,8 @@ if ! grep -q "SessionEnd" "$SETTINGS_FILE"; then
 fi
 
 # Check hook scripts exist
-POST_HOOK="$EXPECTED_ORG_STANDARDS/claude-code/introspection/hooks/post_tool_use.py"
-SESSION_HOOK="$EXPECTED_ORG_STANDARDS/claude-code/introspection/hooks/session_end.py"
+POST_HOOK="$EXPECTED_ORG_STANDARDS/claude-code/introspection/current/hooks/post_tool_use.py"
+SESSION_HOOK="$EXPECTED_ORG_STANDARDS/claude-code/introspection/current/hooks/session_end.py"
 
 if [ ! -f "$POST_HOOK" ]; then
     print_error "Hook script not found: $POST_HOOK"
@@ -362,7 +362,7 @@ echo ""
 echo "Configuration:"
 echo "  • org-standards:    $EXPECTED_ORG_STANDARDS"
 echo "  • Settings file:    $SETTINGS_FILE"
-echo "  • Hook scripts:     $EXPECTED_ORG_STANDARDS/claude-code/introspection/hooks/"
+echo "  • Hook scripts:     $EXPECTED_ORG_STANDARDS/claude-code/introspection/current/hooks/"
 echo ""
 
 echo "Next Steps:"

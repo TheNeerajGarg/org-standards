@@ -24,7 +24,7 @@ echo "✅ Found org-standards at: $ORG_STANDARDS_DIR"
 echo ""
 
 # Step 2: Verify hook scripts exist
-HOOKS_DIR="$ORG_STANDARDS_DIR/claude-code/introspection/hooks"
+HOOKS_DIR="$ORG_STANDARDS_DIR/claude-code/introspection/current/hooks"
 if [ ! -f "$HOOKS_DIR/post_tool_use.py" ]; then
     echo "❌ ERROR: Hook scripts not found"
     echo "Expected: $HOOKS_DIR/post_tool_use.py"
@@ -52,14 +52,14 @@ cat > "$SETTINGS_FILE" <<'EOF'
       "matcher": "*",
       "hooks": [{
         "type": "command",
-        "command": "python3 ~/org-standards/claude-code/introspection/hooks/post_tool_use.py"
+        "command": "python3 ~/org-standards/claude-code/introspection/current/hooks/post_tool_use.py"
       }]
     }],
     "SessionEnd": [{
       "matcher": "*",
       "hooks": [{
         "type": "command",
-        "command": "python3 ~/org-standards/claude-code/introspection/hooks/session_end.py"
+        "command": "python3 ~/org-standards/claude-code/introspection/current/hooks/session_end.py"
       }]
     }]
   }
@@ -81,7 +81,7 @@ echo ""
 # Step 5: Test hook execution
 echo "Testing hook scripts..."
 TEST_INPUT='{"tool_name":"Bash","exit_code":1,"stderr":"test error","tool_input":{"command":"test"}}'
-if echo "$TEST_INPUT" | python3 ~/org-standards/claude-code/introspection/hooks/post_tool_use.py > /dev/null 2>&1; then
+if echo "$TEST_INPUT" | python3 ~/org-standards/claude-code/introspection/current/hooks/post_tool_use.py > /dev/null 2>&1; then
     echo "✅ Hook scripts working"
 else
     echo "⚠️  Warning: Hook test failed"
