@@ -3,43 +3,46 @@
 
 ---
 
-## Overview
+## 🚀 Quick Start for Developers
 
-**What**: Automatic failure tracking for all Claude Code sessions across the organization
-**Where**: Works in ALL repositories (no repo-specific dependencies)
-**When**: Active after one-time 5-minute setup per developer/machine
-**Why**: Organization-wide learning from mistakes, pattern detection, prevention
+### Option 1: One-Line Setup (Recommended)
+
+**Copy-paste this into your terminal**:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/StyleGuru/org-standards/main/claude-code/activate-introspection.sh | bash
+```
+
+Then **restart Claude Code**. Done!
+
+**What it does**:
+- ✅ Clones org-standards (if not present)
+- ✅ Configures introspection hooks
+- ✅ Validates everything works
+- ✅ Safe to run multiple times (idempotent)
+
+**Time**: 2-5 minutes
 
 ---
 
-## Quick Setup (5 Minutes)
+### Option 2: Manual Setup
 
-### Step 1: Clone org-standards (if not already)
+If you prefer to see each step:
 
 ```bash
+# 1. Clone org-standards (if not already)
 git clone git@github.com:StyleGuru/org-standards.git ~/org-standards
-```
 
-### Step 2: Run Setup Script
-
-```bash
+# 2. Run idempotent setup script
 cd ~/org-standards
-./claude-code/setup-introspection.sh
-```
+./claude-code/activate-introspection.sh
 
-### Step 3: Restart Claude Code
+# 3. Restart Claude Code
+#    - Close Claude Code completely
+#    - Reopen Claude Code
 
-- Close Claude Code completely
-- Reopen Claude Code
-- Hooks now active!
-
-### Step 4: Verify
-
-```bash
-# Generate test failure
+# 4. Verify it works
 python -c "import nonexistent"
-
-# Check if logged
 tail ~/.claude/failure-tracker/sessions/*/failures.jsonl | python3 -m json.tool
 ```
 
@@ -53,6 +56,20 @@ tail ~/.claude/failure-tracker/sessions/*/failures.jsonl | python3 -m json.tool
   "exit_code": 1
 }
 ```
+
+---
+
+## Overview
+
+**What**: Automatic failure tracking for all Claude Code sessions across the organization
+
+**Where**: Works in ALL repositories (Syra, StyleGuru, any project) - no per-repo setup needed
+
+**When**: Active after one-time setup per developer/machine (2-5 minutes)
+
+**Why**: Organization-wide learning from mistakes, pattern detection, prevention
+
+**How**: Lightweight hooks (<0.2ms overhead) automatically log all command failures
 
 ---
 
@@ -242,14 +259,58 @@ tail -1 ~/.claude/failure-tracker/sessions/*/failures.jsonl
 
 ## For New Developers
 
-**Onboarding checklist**:
-1. ☐ Clone org-standards: `git clone ... ~/org-standards`
-2. ☐ Run setup: `cd ~/org-standards && ./claude-code/setup-introspection.sh`
-3. ☐ Restart Claude Code
-4. ☐ Test: `python -c "import nonexistent"` → verify logged
-5. ☐ Done! Works in ALL repos.
+### What You Need to Do
 
-**Time**: 5 minutes per developer/machine
+**One command** (copy-paste):
+```bash
+curl -fsSL https://raw.githubusercontent.com/StyleGuru/org-standards/main/claude-code/activate-introspection.sh | bash
+```
+
+Then **restart Claude Code**. That's it!
+
+---
+
+### Detailed Onboarding Checklist
+
+If you want to understand each step:
+
+1. **Run the setup script** (handles everything automatically):
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/StyleGuru/org-standards/main/claude-code/activate-introspection.sh | bash
+   ```
+
+2. **Restart Claude Code**:
+   - Close Claude Code completely
+   - Reopen Claude Code
+   - Hooks are now active!
+
+3. **Verify it works** (optional):
+   ```bash
+   # Generate a test failure
+   python -c "import nonexistent"
+
+   # Check if it was logged
+   tail ~/.claude/failure-tracker/sessions/*/failures.jsonl | python3 -m json.tool
+   ```
+
+4. **Done!** Introspection now works in ALL repos you work on (Syra, StyleGuru, any project).
+
+**Time**: 2-5 minutes
+
+---
+
+### What the Script Does
+
+The `activate-introspection.sh` script is **fully idempotent** and handles:
+
+- ✅ Clones org-standards if not present (or creates symlink if found elsewhere)
+- ✅ Checks if already configured → skips if done
+- ✅ Migrates from old Syra paths → automatic backup + update
+- ✅ Validates configuration → JSON syntax, paths, hook execution
+- ✅ Updates if needed → detects outdated, offers to pull
+- ✅ Safe to run repeatedly → no side effects
+
+**What this means for you**: Just run the command, answer a few prompts, restart Claude Code. Everything else is automatic.
 
 ---
 
