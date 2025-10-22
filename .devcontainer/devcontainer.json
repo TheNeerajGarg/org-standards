@@ -1,0 +1,92 @@
+{
+  "name": "NeerajDev - Unified Workspace",
+  "build": {
+    "dockerfile": "./org-standards/devcontainer/Dockerfile",
+    "context": "."
+  },
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+
+  // Mount config directories
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/fashion-extract,target=/root/.config/fashion-extract,type=bind,readonly",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/syra,target=/root/.config/syra,type=bind,readonly"
+  ],
+
+  // VS Code customizations
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "charliermarsh.ruff",
+        "ms-python.mypy-type-checker",
+        "littlefoxteam.vscode-python-test-adapter",
+        "eamodio.gitlens",
+        "usernamehw.errorlens",
+        "continue.continue",
+        "anthropic.claude-code"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.analysis.typeCheckingMode": "basic",
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.diagnosticMode": "workspace",
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        },
+        "ruff.lint.enable": true,
+        "black-formatter.args": ["--line-length=100"],
+        "isort.args": ["--profile=black"],
+        "mypy-type-checker.args": ["--config-file=mypy.ini"],
+        "ruff.format.args": ["--line-length=100"],
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.pytestArgs": ["--tb=short", "-v"],
+        "editor.rulers": [88, 100],
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.tabs.title": "🌐 NeerajDev: ${process}",
+        "terminal.integrated.tabs.description": "Unified Workspace",
+        "workbench.colorCustomizations": {
+          "terminal.background": "#1a1a2e",
+          "terminal.foreground": "#00ff88",
+          "terminalCursor.background": "#00ff88",
+          "terminalCursor.foreground": "#00ff88",
+          "terminal.border": "#00ff88"
+        }
+      }
+    }
+  },
+
+  // Pass through environment variables
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
+    "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
+    "HONEYCOMB_API_KEY": "${localEnv:HONEYCOMB_API_KEY}",
+    "BOT_GITHUB_TOKEN": "${localEnv:BOT_GITHUB_TOKEN}",
+    "NEERAJ_DEV": "/workspace"
+  },
+
+  // Forward common ports
+  "forwardPorts": [3000, 8000, 8080],
+
+  "remoteUser": "vscode",
+
+  // Install dependencies for all projects after container creation
+  "postCreateCommand": "echo '📦 Installing dependencies...' && (cd /workspace/fashion-extract && pip install -r requirements.txt --break-system-packages && pip install -e .[test,dev] --break-system-packages) && (cd /workspace/syra && pip install -e .[test,dev] --break-system-packages) && echo '✅ All dependencies installed'",
+
+  // Post-start command - configure git safe directories for all repos
+  "postStartCommand": "git config --global --add safe.directory /workspace/fashion-extract && git config --global --add safe.directory /workspace/syra && git config --global --add safe.directory /workspace/syra-playground && git config --global --add safe.directory /workspace/org-standards && echo '✅ NeerajDev Unified Workspace ready - All repos accessible!'"
+}
