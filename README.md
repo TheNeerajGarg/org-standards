@@ -20,6 +20,12 @@ This repository contains battle-tested configurations, coding standards, and wor
 - Testing (pytest with coverage)
 - Pre-commit hooks
 
+### CI/Dev Container
+- **NEW (2025-10-22)**: Standard devcontainer for dev/CI parity
+- Ubuntu 24.04 base image
+- Python 3.11 + all dev tools pre-installed
+- Ensures "works locally" = "works in CI"
+
 ### GitHub Workflows
 - PR validation
 - CI/CD templates
@@ -69,6 +75,11 @@ Run sync script:
 
 ```
 org-standards/
+├── devcontainer/                # NEW: Standard CI/Dev container
+│   ├── Dockerfile               # Ubuntu 24.04 + Python 3.11 + tools
+│   ├── devcontainer.json        # VS Code devcontainer config
+│   └── README.md                # Dev/CI parity guide
+│
 ├── python/
 │   ├── pyproject.toml           # Ruff, mypy, pytest config
 │   ├── .pre-commit-config.yaml  # Pre-commit hooks
@@ -134,6 +145,13 @@ Projects reference specific versions in comments.
 ---
 
 ## Recent Changes
+
+### 2025-10-22: Standard CI/Dev Container
+- **NEW**: Standard devcontainer for all projects
+- Ensures perfect dev/CI parity (no more "works on my machine")
+- Based on ubuntu-24.04 + Python 3.11
+- All tools pre-installed: ruff, mypy, pytest, gh CLI, Claude CLI
+- See [devcontainer/README.md](devcontainer/README.md) for usage
 
 ### 2025-10-10: Migration to Ruff
 - **BREAKING**: Replaced black + isort + flake8 with Ruff
