@@ -36,67 +36,77 @@ This directory contains documentation that applies to ALL repositories in the or
 
 ## Distribution
 
-These docs are **automatically synced** to all repos using:
+These docs are distributed via **Git submodules** with branch-based versioning:
+- **stable** branch → Production repos (StyleGuru)
+- **main** branch → Development repos (Syra, Syra-playground)
+
+### How Repos Access These Docs
+
+Repos include org-standards as a Git submodule:
 ```bash
-./scripts/sync-claude-docs.sh
+# In fashion-extract (uses stable)
+git submodule add -b stable https://github.com/TheNeerajGarg/org-standards.git org-standards
+
+# In syra (uses main/development)
+git submodule add -b main https://github.com/TheNeerajGarg/org-standards.git org-standards
 ```
 
-### Synced Copies (Git-tracked)
-- `fashion-extract/.claude/` - Copies for StyleGuru bots/Claude
-- `syra/.claude/` - Copies for Syra bots/Claude
-- `syra-playground/.claude/` - Copies for playground bots/Claude
+Docs are then available at `org-standards/.claude/` in each repo.
 
 ## Workflow
 
 ### Updating Documentation
 
-1. **Edit here** (org-standards/.claude/):
-   ```bash
-   cd ~/NeerajDev/org-standards/.claude
-   vim quality-standards.md  # Edit the source
-   ```
-
-2. **Sync to all repos**:
+1. **Edit standards** (org-standards repo):
    ```bash
    cd ~/NeerajDev/org-standards
-   ./scripts/sync-claude-docs.sh
+   git checkout main  # Always edit on main
+   vim .claude/quality-standards.md
+   git add . && git commit -m "docs: update quality standards"
+   git push origin main
    ```
 
-3. **Commit everywhere**:
+2. **Test in Syra** (uses main automatically):
    ```bash
-   # Commit source in org-standards
-   cd ~/NeerajDev/org-standards
-   git add .claude/
-   git commit -m "docs: update quality standards"
-   git push
+   cd ~/NeerajDev/syra
+   git submodule update --remote org-standards  # Pull latest main
+   # Use for 1-2 weeks, verify no issues
+   ```
 
-   # Commit synced copies in each repo
+3. **Promote to stable** (when ready):
+   ```bash
+   cd ~/NeerajDev/org-standards
+   git checkout stable
+   git merge main --no-ff -m "promote: quality standards updates"
+   git tag v1.x.x
+   git push origin stable --tags
+   ```
+
+4. **StyleGuru adopts** (when ready):
+   ```bash
    cd ~/NeerajDev/fashion-extract
-   git add .claude/quality-standards.md
-   git commit -m "docs: sync org-standards/.claude/ updates"
-   git push
-
-   # Repeat for syra, syra-playground
+   git submodule update --remote org-standards  # Pull latest stable
+   git commit -am "chore: update org-standards to v1.x.x"
    ```
 
-## Why This Approach?
+## Why Git Submodules?
 
-### Why Not Symlinks?
-- ❌ Symlinks don't work well in Git (tracked as symlinks, not content)
-- ❌ Symlinks don't work on Windows
-- ❌ Bots in containers can't traverse symlinks across repos
+### Advantages
+- ✅ **Versioning built-in**: stable vs main branches, git tags
+- ✅ **Standard Git tooling**: No custom scripts
+- ✅ **Explicit control**: Repos update when ready (not auto)
+- ✅ **Branch tracking**: Syra follows main, StyleGuru follows stable
+- ✅ **Works everywhere**: Local, CI, containers
+- ✅ **Single source**: org-standards repo is the truth
 
-### Why Not Relative Paths?
-- ❌ Bots run in individual repos, can't access `../org-standards/`
-- ❌ Container mounts may not include all repos
-- ❌ GitHub Actions checkouts are single-repo
+### What About Alternatives?
 
-### Why Synced Copies?
-- ✅ Each repo has self-contained docs (bots work)
-- ✅ Git tracks actual content (not pointers)
-- ✅ Works in all environments (Mac, Windows, containers, CI)
-- ✅ org-standards is single source of truth
-- ✅ One command to sync everything
+**Symlinks**: Don't work in Git, Windows, containers
+**Relative paths**: Fragile directory structure dependencies
+**Package (npm/pip)**: Over-engineered for markdown files
+**Synced copies**: Manual sync, drift risk, 4 commits per change
+
+Git submodules leverage existing version control for versioning.
 
 ## Repo-Specific Documentation
 
