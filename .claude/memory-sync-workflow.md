@@ -24,10 +24,10 @@ User Memory (Imports from Git)
 When Claude Code starts, it loads memory in this order:
 
 1. **User memory**: `~/.claude/CLAUDE.md`
-   - Imports: `@/workspaces/fashion-extract/.claude/org-context.md`
+   - Imports: `@/workspaces/StyleGuru/.claude/org-context.md`
    - Contains: Personal preferences, cross-project context
 
-2. **Project memory**: `/workspaces/fashion-extract/CLAUDE.md`
+2. **Project memory**: `/workspaces/StyleGuru/CLAUDE.md`
    - Contains: Project-specific rules (Top 10 Critical Rules)
    - References: Links to `.claude/*.md` documentation
 
@@ -40,7 +40,7 @@ When Claude Code starts, it loads memory in this order:
 
 ```bash
 # 1. Edit org-context.md in Git
-vim /workspaces/fashion-extract/.claude/org-context.md
+vim /workspaces/StyleGuru/.claude/org-context.md
 
 # 2. Commit and push to main
 git add .claude/org-context.md
@@ -121,14 +121,14 @@ git status .claude/org-context.md
 
 ```bash
 # 1. Clone repository
-git clone <repo-url> /workspaces/fashion-extract
+git clone <repo-url> /workspaces/StyleGuru
 
 # 2. Create user memory (one-time setup)
 mkdir -p ~/.claude
 cat > ~/.claude/CLAUDE.md <<'EOF'
 # User Memory - Neeraj
 
-@/workspaces/fashion-extract/.claude/org-context.md
+@/workspaces/StyleGuru/.claude/org-context.md
 
 ## Personal Preferences
 - Concise, technical communication
@@ -140,7 +140,7 @@ EOF
 
 ## Important Notes
 
-- **User memory path is absolute**: `@/workspaces/fashion-extract/.claude/org-context.md`
+- **User memory path is absolute**: `@/workspaces/StyleGuru/.claude/org-context.md`
 - **Imports have 5-hop max**: Don't create deep import chains
 - **Changes require new session**: Claude loads memory at startup
 - **Dev container compatible**: Works in devcontainer, codespaces, local

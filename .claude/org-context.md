@@ -16,7 +16,7 @@ Single human (Neeraj) orchestrating AI bot swarm
 ## Repository Map
 
 **Where to work:**
-- **StyleGuru** (`/Users/neerajgarg/fashion-extract/` or `/workspaces/fashion-extract/`): Product features, fashion AI
+- **StyleGuru** (`/Users/neerajgarg/StyleGuru/` or `/workspaces/StyleGuru/`): Product features, fashion AI
 - **syra** (`/Users/neerajgarg/syra/`): Dev tools, introspection, workflow infrastructure
 - **syra-playground** (`/Users/neerajgarg/syra-playground/`): Rapid experimentation, prototyping
 - **org-standards** (`/Users/neerajgarg/org-standards/`): Shared coding standards

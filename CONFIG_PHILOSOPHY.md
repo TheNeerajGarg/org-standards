@@ -2,7 +2,7 @@
 
 **Source**: org-standards
 **Date**: 2025-10-10
-**Context**: Principles extracted from fashion-extract audit and workflow POC learnings
+**Context**: Principles extracted from StyleGuru audit and workflow POC learnings
 
 ---
 
@@ -382,7 +382,7 @@ timeout = settings.api.timeout_seconds  # From default.toml
 
 ---
 
-## Real-World Example: fashion-extract
+## Real-World Example: StyleGuru
 
 ### ✅ Correct Placement
 
@@ -494,4 +494,4 @@ When auditing a project for compliance:
 
 **Related Docs**:
 - [python/README.md](python/README.md) - Dynaconf setup guide
-- [YAML_ARCHITECTURE.md](https://github.com/neerajgarg/fashion-extract/.workflow-poc/v2/config/YAML_ARCHITECTURE.md) - Workflow YAML design
+- [YAML_ARCHITECTURE.md](https://github.com/neerajgarg/StyleGuru/.workflow-poc/v2/config/YAML_ARCHITECTURE.md) - Workflow YAML design

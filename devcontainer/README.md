@@ -124,18 +124,18 @@
 }
 ```
 
-### StyleGuru/fashion-extract (Fashion AI)
+### StyleGuru/StyleGuru (Fashion AI)
 ```json
 {
   "name": "Fashion Extract - CI Container",
-  "workspaceFolder": "/workspace/fashion-extract",
+  "workspaceFolder": "/workspace/StyleGuru",
   "remoteEnv": {
     "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
     "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
     "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
     "HONEYCOMB_API_KEY": "${localEnv:HONEYCOMB_API_KEY}"
   },
-  "postStartCommand": "git config --global --add safe.directory /workspace/fashion-extract && . ~/.config/fashion-extract/tokens.env"
+  "postStartCommand": "git config --global --add safe.directory /workspace/StyleGuru && . ~/.config/StyleGuru/tokens.env"
 }
 ```
 
