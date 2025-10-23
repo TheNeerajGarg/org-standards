@@ -70,7 +70,7 @@ gh release create v1.x.x \
 StyleGuru updates when team decides:
 
 ```bash
-cd ~/NeerajDev/fashion-extract
+cd ~/NeerajDev/StyleGuru
 git submodule update --remote org-standards
 git add org-standards
 git commit -m "chore: update org-standards to v1.x.x"

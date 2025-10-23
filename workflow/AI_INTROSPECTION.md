@@ -115,7 +115,7 @@ Should I apply this fix to CLAUDE.md now? (yes/no)
 
 #### Example 1: Wrong Repository Choice
 
-**Human**: "This should go in syra, not fashion-extract"
+**Human**: "This should go in syra, not StyleGuru"
 
 **AI Action** (automatic):
 1. Create `.ai-sessions/2025-10-13/correction-124530.md`

@@ -395,7 +395,7 @@ Total tests: 1436
 
 **Example (GOOD)**:
 ```bash
-cd /Users/neerajgarg/fashion-extract
+cd /Users/neerajgarg/StyleGuru
 git checkout -b feature/add-test-markers
 ```
 

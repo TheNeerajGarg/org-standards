@@ -65,7 +65,7 @@ Run sync script:
 
 ## Projects Using These Standards
 
-- [fashion-extract](https://github.com/neerajgarg/fashion-extract) - StyleGuru product
+- [StyleGuru](https://github.com/neerajgarg/StyleGuru) - StyleGuru product
 - [syra](https://github.com/neerajgarg/syra) - AI development platform
 - [syra-playground](https://github.com/neerajgarg/syra-playground) - Syra testing ground
 
@@ -138,7 +138,7 @@ Standards come from real project needs. When you discover a better pattern:
 ## Versioning
 
 We use simple date-based versioning:
-- `2025-10-10` - Initial extraction from fashion-extract, migrated to Ruff
+- `2025-10-10` - Initial extraction from StyleGuru, migrated to Ruff
 
 Projects reference specific versions in comments.
 

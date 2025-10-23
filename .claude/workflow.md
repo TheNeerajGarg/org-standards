@@ -122,7 +122,7 @@ gh issue edit <issue-number> --add-label "engineering-pending,ux-pending,pm-pend
 
 ## Repository Guide
 
-**StyleGuru** (`/Users/neerajgarg/fashion-extract/`, repo: `StyleGuru/StyleGuru`):
+**StyleGuru** (`/Users/neerajgarg/StyleGuru/`, repo: `StyleGuru/StyleGuru`):
 - Product code for StyleGuru fashion AI
 - V1 workflow in `.github/workflows/` (GitHub Actions, active, no Supabase)
 - V1 bots in `.workflow-poc/phase1/` (bot_reviewer_github.py)
@@ -149,7 +149,7 @@ gh issue edit <issue-number> --add-label "engineering-pending,ux-pending,pm-pend
 **Current Phase**: Discovery - go broad, find all problems, document root causes, solve tactically
 
 **Key Projects**:
-- **StyleGuru** (fashion-extract): Real product for revenue + learning
+- **StyleGuru** (StyleGuru): Real product for revenue + learning
 - **Syra**: Productize SDLC learnings
 - **Playground**: Rapid experimentation
 

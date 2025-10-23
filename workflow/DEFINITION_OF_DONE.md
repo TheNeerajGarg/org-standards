@@ -2,7 +2,7 @@
 
 **Purpose**: Ensure tasks meet quality standards before being marked complete
 
-**Applies to**: All projects (fashion-extract, syra, playground, etc.)
+**Applies to**: All projects (StyleGuru, syra, playground, etc.)
 
 **Date**: 2025-01-13
 
@@ -536,4 +536,4 @@ Track these to measure DoD effectiveness:
 
 - [org-standards/python/README.md](../python/README.md) - Python standards
 - [org-standards/CONFIG_PHILOSOPHY.md](../CONFIG_PHILOSOPHY.md) - Configuration standards
-- fashion-extract/.ai-sessions/2025-01-13/learning-definition-of-done.md - Detailed learning log
+- StyleGuru/.ai-sessions/2025-01-13/learning-definition-of-done.md - Detailed learning log

@@ -5,7 +5,7 @@
 ## Purpose
 
 This directory contains documentation that applies to ALL repositories in the organization:
-- fashion-extract (StyleGuru product)
+- StyleGuru (StyleGuru product)
 - syra (dev tools platform)
 - syra-playground (experiments)
 
@@ -44,7 +44,7 @@ These docs are distributed via **Git submodules** with branch-based versioning:
 
 Repos include org-standards as a Git submodule:
 ```bash
-# In fashion-extract (uses stable)
+# In StyleGuru (uses stable)
 git submodule add -b stable https://github.com/TheNeerajGarg/org-standards.git org-standards
 
 # In syra (uses main/development)
@@ -84,7 +84,7 @@ Docs are then available at `org-standards/.claude/` in each repo.
 
 4. **StyleGuru adopts** (when ready):
    ```bash
-   cd ~/NeerajDev/fashion-extract
+   cd ~/NeerajDev/StyleGuru
    git submodule update --remote org-standards  # Pull latest stable
    git commit -am "chore: update org-standards to v1.x.x"
    ```
@@ -112,7 +112,7 @@ Git submodules leverage existing version control for versioning.
 
 Each repo also has its own `.claude/` directory for repo-specific docs:
 
-- **fashion-extract/.claude/**
+- **StyleGuru/.claude/**
   - `architecture.md` - StyleGuru architecture
   - `CURRENT_STATE.md` - Deployment state
   - instance configs, worktree guides, etc.

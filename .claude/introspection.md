@@ -233,20 +233,20 @@ When human says any of these, create introspection log:
 
 ## Examples
 
-**Human**: "Log this: You used fashion-extract when this should go in syra"
+**Human**: "Log this: You used StyleGuru when this should go in syra"
 
 **AI Response**:
 ```
 ✅ Logged to .ai-sessions/2025-01-13/correction-143000.md
 
 Summary:
-- Issue: Wrong repository (used fashion-extract instead of syra)
+- Issue: Wrong repository (used StyleGuru instead of syra)
 - Root cause: Repository guide exists but not clear enough about dev tools
 - Proposed fix: Strengthen "Rule of thumb" with bold emphasis
 - Confidence: 7/10
 
 Proposed CLAUDE.md update:
-**RULE**: ALL dev tooling goes in Syra. ALL product features go in fashion-extract.
+**RULE**: ALL dev tooling goes in Syra. ALL product features go in StyleGuru.
 
 Should I apply this fix now?
 ```

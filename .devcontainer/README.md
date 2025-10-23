@@ -4,7 +4,7 @@ This directory contains the **organization standard** devcontainer configuration
 
 ## Purpose
 
-Provides a unified development environment where all repositories (fashion-extract, syra, syra-playground, org-standards) are accessible within a single container.
+Provides a unified development environment where all repositories (StyleGuru, syra, syra-playground, org-standards) are accessible within a single container.
 
 ## Directory Structure
 
@@ -28,7 +28,7 @@ org-standards/
 - All repos cloned to `~/NeerajDev/`:
   ```
   ~/NeerajDev/
-  ├── fashion-extract/
+  ├── StyleGuru/
   ├── syra/
   ├── syra-playground/
   └── org-standards/    # This repo
@@ -89,7 +89,7 @@ git pull  # Updates .devcontainer/devcontainer.json
 ## Container Features
 
 ### Repositories Accessible
-- `/workspace/fashion-extract` - StyleGuru product
+- `/workspace/StyleGuru` - StyleGuru product
 - `/workspace/syra` - Dev tools platform
 - `/workspace/syra-playground` - Experiments
 - `/workspace/org-standards` - Shared standards
@@ -169,7 +169,7 @@ docker ps
 ### Dependencies Not Installing
 ```bash
 # Inside container, manually install:
-cd /workspace/fashion-extract
+cd /workspace/StyleGuru
 pip install -e .[test,dev]
 
 cd /workspace/syra
