@@ -171,9 +171,7 @@ class SessionManager:
         # Priority 1: Environment variable
         session_id = os.environ.get("CLAUDE_SESSION_ID")
         if session_id:
-            logger.info(
-                "Using session ID from environment", extra={"session_id": session_id}
-            )
+            logger.info("Using session ID from environment", extra={"session_id": session_id})
             return session_id
 
         # Priority 2: Atomic check-and-create with file lock
@@ -288,9 +286,7 @@ def atomic_write(filepath: Path):
     Registers temp files for cleanup on abnormal exit to prevent disk space leaks.
     """
     # Write to temp file in same directory (same filesystem)
-    temp_fd, temp_path = tempfile.mkstemp(
-        dir=filepath.parent, prefix=f".{filepath.name}.tmp.", suffix=".tmp"
-    )
+    temp_fd, temp_path = tempfile.mkstemp(dir=filepath.parent, prefix=f".{filepath.name}.tmp.", suffix=".tmp")
 
     # Register for cleanup on abnormal exit
     _temp_files.append(temp_path)
@@ -452,9 +448,7 @@ def file_lock(filepath: Path, timeout: float = 5.0, stale_threshold: float = 300
                             "lock_age": lock_age,
                         },
                     )
-                    raise TimeoutError(
-                        f"Could not acquire lock on {filepath} after {timeout}s"
-                    ) from e
+                    raise TimeoutError(f"Could not acquire lock on {filepath} after {timeout}s") from e
 
                 time.sleep(0.01)
 
@@ -535,9 +529,7 @@ class FailureTracker:
                 )
         except PermissionError as e:
             # Permission denied - fallback to emergency log in /tmp
-            emergency_log = Path(
-                f"/tmp/failures-emergency-{self.session.session_id}.jsonl"
-            )
+            emergency_log = Path(f"/tmp/failures-emergency-{self.session.session_id}.jsonl")
 
             logger.warning(
                 "Permission denied on failure log - using emergency log",
@@ -553,9 +545,7 @@ class FailureTracker:
                 # Write to emergency log in /tmp (usually writable)
                 with open(emergency_log, "a") as f:
                     f.write(json.dumps(failure_record) + "\n")
-                    f.write(
-                        "# WARNING: Written to emergency log due to permission error\n"
-                    )
+                    f.write("# WARNING: Written to emergency log due to permission error\n")
                     f.flush()
                 logger.info(
                     "Failure written to emergency log",
@@ -673,9 +663,7 @@ class FailureTracker:
                     for line in f:
                         try:
                             record = json.loads(line.strip())
-                            timestamp = datetime.fromisoformat(
-                                record["timestamp"]
-                            ).timestamp()
+                            timestamp = datetime.fromisoformat(record["timestamp"]).timestamp()
                             if timestamp >= cutoff_time:
                                 recent_failures.append(record)
                         except (json.JSONDecodeError, KeyError, ValueError):
@@ -686,9 +674,7 @@ class FailureTracker:
                 for line in f:
                     try:
                         record = json.loads(line.strip())
-                        timestamp = datetime.fromisoformat(
-                            record["timestamp"]
-                        ).timestamp()
+                        timestamp = datetime.fromisoformat(record["timestamp"]).timestamp()
                         if timestamp >= cutoff_time:
                             recent_failures.append(record)
                     except (json.JSONDecodeError, KeyError, ValueError):
@@ -816,15 +802,11 @@ class FailureTracker:
                 try:
                     with open(session_info) as f:
                         info = json.load(f)
-                        start_time = datetime.fromisoformat(
-                            info["start_time"]
-                        ).timestamp()
+                        start_time = datetime.fromisoformat(info["start_time"]).timestamp()
 
                         if start_time < cutoff:
                             # Archive to date-based directory
-                            date_str = datetime.fromtimestamp(start_time).strftime(
-                                "%Y-%m-%d"
-                            )
+                            date_str = datetime.fromtimestamp(start_time).strftime("%Y-%m-%d")
                             dest = archive_dir / date_str / session_dir.name
                             dest.parent.mkdir(parents=True, exist_ok=True)
 
@@ -854,9 +836,7 @@ class FailureTracker:
                     )
                     continue
 
-        logger.info(
-            "Completed session cleanup", extra={"archived_count": archived_count}
-        )
+        logger.info("Completed session cleanup", extra={"archived_count": archived_count})
         return archived_count
 
 

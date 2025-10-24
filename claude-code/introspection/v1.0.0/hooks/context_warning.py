@@ -197,9 +197,7 @@ def check_total_context():
             f"      - Large files: {large_file_count} × ~30K = ~{large_file_count * 30000:,} tokens",
             file=sys.stderr,
         )
-        print(
-            "   🔄 STRONGLY RECOMMEND: Exit and start fresh session\n", file=sys.stderr
-        )
+        print("   🔄 STRONGLY RECOMMEND: Exit and start fresh session\n", file=sys.stderr)
 
 
 def main():

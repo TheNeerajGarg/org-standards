@@ -121,9 +121,7 @@ class PatternDetector:
 
         return result
 
-    def _read_session_failures(
-        self, session_dir: Path, cutoff_timestamp: float
-    ) -> list[dict]:
+    def _read_session_failures(self, session_dir: Path, cutoff_timestamp: float) -> list[dict]:
         """Read failures from a session directory."""
         failures: list[dict] = []
         failure_log = session_dir / "failures.jsonl"
@@ -136,9 +134,7 @@ class PatternDetector:
                 for line in f:
                     try:
                         record = json.loads(line.strip())
-                        timestamp = datetime.fromisoformat(
-                            record["timestamp"]
-                        ).timestamp()
+                        timestamp = datetime.fromisoformat(record["timestamp"]).timestamp()
 
                         if timestamp >= cutoff_timestamp:
                             failures.append(record)
@@ -156,9 +152,7 @@ class PatternDetector:
         Returns:
             List of pattern dictionaries
         """
-        logger.debug(
-            "Detecting patterns in failures", extra={"failure_count": len(failures)}
-        )
+        logger.debug("Detecting patterns in failures", extra={"failure_count": len(failures)})
         patterns = []
 
         # Pattern 1: Recurring error types
@@ -174,9 +168,7 @@ class PatternDetector:
                     "error_type": error_type,
                     "occurrences": len(error_failures),
                     "affected_sessions": len(sessions),
-                    "severity": self._calculate_severity(
-                        len(error_failures), len(sessions)
-                    ),
+                    "severity": self._calculate_severity(len(error_failures), len(sessions)),
                     "first_seen": error_failures[0]["timestamp"],
                     "last_seen": error_failures[-1]["timestamp"],
                     "sample_message": error_failures[-1]["error_message"],
@@ -207,12 +199,8 @@ class PatternDetector:
                             "tool_name": tool_name,
                             "occurrences": len(tool_failures),
                             "affected_sessions": len(sessions),
-                            "severity": self._calculate_severity(
-                                len(tool_failures), len(sessions)
-                            ),
-                            "common_errors": self._get_common_errors(
-                                tool_failures, top=3
-                            ),
+                            "severity": self._calculate_severity(len(tool_failures), len(sessions)),
+                            "common_errors": self._get_common_errors(tool_failures, top=3),
                         }
                     )
 
@@ -235,18 +223,14 @@ class PatternDetector:
                             "occurrences": len(host_failures),
                             "affected_sessions": host_sessions,
                             "severity": "HIGH",
-                            "common_errors": self._get_common_errors(
-                                host_failures, top=3
-                            ),
+                            "common_errors": self._get_common_errors(host_failures, top=3),
                         }
                     )
 
         # Sort by severity
         patterns.sort(
             key=lambda p: (
-                {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}.get(
-                    p.get("severity", "LOW"), 3
-                ),
+                {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}.get(p.get("severity", "LOW"), 3),
                 -p.get("occurrences", 0),
             )
         )
@@ -265,9 +249,7 @@ class PatternDetector:
         else:
             return "LOW"
 
-    def _get_common_errors(
-        self, failures: list[dict], top: int = 3
-    ) -> list[tuple[str, int]]:
+    def _get_common_errors(self, failures: list[dict], top: int = 3) -> list[tuple[str, int]]:
         """Get most common error types from failures."""
         error_types = [f["error_type"] for f in failures]
         counter = Counter(error_types)
@@ -382,10 +364,7 @@ class PatternDetector:
                 "session2": session2["total_failures"],
                 "difference": session1["total_failures"] - session2["total_failures"],
             },
-            "common_errors": set(session1["failures_by_type"].keys())
-            & set(session2["failures_by_type"].keys()),
-            "unique_to_session1": set(session1["failures_by_type"].keys())
-            - set(session2["failures_by_type"].keys()),
-            "unique_to_session2": set(session2["failures_by_type"].keys())
-            - set(session1["failures_by_type"].keys()),
+            "common_errors": set(session1["failures_by_type"].keys()) & set(session2["failures_by_type"].keys()),
+            "unique_to_session1": set(session1["failures_by_type"].keys()) - set(session2["failures_by_type"].keys()),
+            "unique_to_session2": set(session2["failures_by_type"].keys()) - set(session1["failures_by_type"].keys()),
         }

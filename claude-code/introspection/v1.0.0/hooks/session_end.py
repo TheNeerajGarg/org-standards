@@ -67,9 +67,7 @@ def main():
         repo_path = Path.cwd()
         output_file = generator.save_to_repo(introspection_md, repo_path, session_id)
 
-        logger.info(
-            "Introspection document created", extra={"output_file": str(output_file)}
-        )
+        logger.info("Introspection document created", extra={"output_file": str(output_file)})
 
         print(f"✅ Created self-introspection: {output_file}", file=sys.stderr)
         print(

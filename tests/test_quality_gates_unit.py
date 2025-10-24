@@ -142,9 +142,7 @@ def test_validate_config_missing_execution_order():
 
 def test_validate_config_undefined_gate_in_order(invalid_config_undefined_gate):
     """Config with undefined gate in execution_order fails."""
-    with pytest.raises(
-        ValueError, match="execution_order references undefined gates.*coverage"
-    ):
+    with pytest.raises(ValueError, match="execution_order references undefined gates.*coverage"):
         _validate_config(invalid_config_undefined_gate)
 
 

@@ -97,8 +97,7 @@ class MCPConfigValidator:
         if "type" in config:
             if config["type"] not in self.VALID_TYPES:
                 self.errors.append(
-                    f"Server '{name}': Invalid type '{config['type']}'. "
-                    f"Valid types: {', '.join(self.VALID_TYPES)}"
+                    f"Server '{name}': Invalid type '{config['type']}'. Valid types: {', '.join(self.VALID_TYPES)}"
                 )
 
         # Validate args is array
@@ -125,9 +124,7 @@ class MCPConfigValidator:
         if len(args) >= 2 and args[0] == "-m":
             module_name = args[1]
             if not self._is_valid_module_name(module_name):
-                self.warnings.append(
-                    f"Server '{server_name}': Module name '{module_name}' may not be valid"
-                )
+                self.warnings.append(f"Server '{server_name}': Module name '{module_name}' may not be valid")
 
         # Check for absolute paths (workspace root should be absolute)
         if len(args) >= 3:
@@ -140,9 +137,7 @@ class MCPConfigValidator:
             else:
                 # Validate path exists
                 if not Path(workspace_path).exists():
-                    self.errors.append(
-                        f"Server '{server_name}': Workspace path '{workspace_path}' does not exist"
-                    )
+                    self.errors.append(f"Server '{server_name}': Workspace path '{workspace_path}' does not exist")
 
     def _is_valid_module_name(self, name: str) -> bool:
         """
@@ -157,9 +152,7 @@ class MCPConfigValidator:
         # Basic check: alphanumeric + underscore + dots
         import re
 
-        return bool(
-            re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$", name)
-        )
+        return bool(re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$", name))
 
     def print_results(self) -> None:
         """Print validation results."""

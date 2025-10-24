@@ -52,9 +52,7 @@ def main():
         )
 
         if exit_code != 0 or stderr:
-            logger.debug(
-                "Failure detected, logging to tracker", extra={"tool_name": tool_name}
-            )
+            logger.debug("Failure detected, logging to tracker", extra={"tool_name": tool_name})
             # Log the failure
             tracker = FailureTracker()
             tracker.log_failure(event_data)

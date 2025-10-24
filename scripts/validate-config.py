@@ -81,9 +81,7 @@ def validate_semantic(config: dict[str, Any]) -> bool:
     enabled_gates = {name for name, cfg in gates.items() if cfg.get("enabled", False)}
     missing_from_order = enabled_gates - ordered_gates
     if missing_from_order:
-        errors.append(
-            f"Enabled gates missing from execution_order: {missing_from_order}"
-        )
+        errors.append(f"Enabled gates missing from execution_order: {missing_from_order}")
 
     # Rule 3: Check circular dependencies
     for gate_name, gate_config in gates.items():
@@ -104,9 +102,7 @@ def validate_semantic(config: dict[str, Any]) -> bool:
             current_deps = gates.get(current, {}).get("depends_on", [])
             for dep in current_deps:
                 if dep == gate_name:
-                    errors.append(
-                        f"Circular dependency detected: {gate_name} -> ... -> {dep}"
-                    )
+                    errors.append(f"Circular dependency detected: {gate_name} -> ... -> {dep}")
                     break
                 if dep in gates:
                     stack.append(dep)
