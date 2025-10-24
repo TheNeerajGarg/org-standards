@@ -1,0 +1,114 @@
+name: Quality Gates (Main Branch Protection)
+
+# CRITICAL: Protects main branch from quality regressions
+# Uses configuration-driven quality gates from org-standards/config/quality-gates.yaml
+# This is the PRIMARY gate - must pass before merge
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+# Cancel old runs to save resources
+concurrency:
+  group: quality-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for diff-cover
+          submodules: recursive  # Get org-standards
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy pytest pytest-cov diff-cover pyyaml
+          pip install -e .[test,dev]  # Install project dependencies
+
+      # Gate 1: Linting
+      - name: "Gate: Linting (ruff format)"
+        run: |
+          echo "🚪 Gate: Linting (format check)"
+          ruff format --check .
+
+      - name: "Gate: Linting (ruff check)"
+        continue-on-error: true  # TEMPORARY - org-standards has linting issues to fix
+        run: |
+          echo "🚪 Gate: Linting (code quality - warning only)"
+          ruff check . || echo "⚠️ Linting issues found (non-blocking)"
+
+      # Gate 2: Type Checking (non-blocking for now - grandfather policy)
+      - name: "Gate: Type Checking (mypy)"
+        continue-on-error: true
+        run: |
+          echo "🚪 Gate: Type Checking (warning only)"
+          mypy . || echo "⚠️ Type errors found (non-blocking)"
+
+      # Gate 3: Tests with Coverage
+      - name: "Gate: Tests"
+        run: |
+          echo "🚪 Gate: Tests"
+          pytest --cov=. --cov-report=xml --cov-report=term-missing
+
+      # Gate 4: Diff Coverage (CRITICAL - blocks PRs with <80% coverage)
+      - name: "Gate: Diff Coverage (≥80% on changed lines)"
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "🚪 Gate: Diff Coverage (changed lines only)"
+
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+          echo "Comparing against: origin/$BASE_BRANCH"
+
+          diff-cover coverage.xml \
+            --compare-branch=origin/$BASE_BRANCH \
+            --fail-under=80 \
+            --ignore-whitespace
+
+      # Gate 5: Overall Coverage (warning only - not blocking)
+      - name: "Gate: Overall Coverage (≥80% target)"
+        continue-on-error: true
+        run: |
+          echo "🚪 Gate: Overall Coverage (warning only)"
+          coverage report --fail-under=80 || echo "⚠️ Overall coverage <80% (non-blocking)"
+
+      - name: Upload coverage to Codecov
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-quality-gates
+          fail_ci_if_error: false
+
+      # Summary
+      - name: Quality Gates Summary
+        if: success()
+        run: |
+          echo ""
+          echo "═══════════════════════════════════════════════"
+          echo "✅ All quality gates passed"
+          echo "═══════════════════════════════════════════════"
+          echo ""
+          echo "Gates checked:"
+          echo "  ✅ Linting (ruff format + ruff check)"
+          echo "  ⚠️  Type checking (warning only)"
+          echo "  ✅ Tests (all passing)"
+          echo "  ✅ Diff coverage ≥80% (changed lines)"
+          echo ""

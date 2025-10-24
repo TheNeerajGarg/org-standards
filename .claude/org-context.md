@@ -27,6 +27,38 @@ Single human (Neeraj) orchestrating AI bot swarm
 - Rapid experimentation → syra-playground
 - Standards → org-standards
 
+## GitHub Authentication in Containers
+
+**CRITICAL: When encountering GitHub auth failures in containers:**
+
+1. **Check environment first**: `BOT_GITHUB_TOKEN` is ALWAYS available in containers
+   ```bash
+   docker exec <container> env | grep BOT_GITHUB_TOKEN
+   ```
+
+2. **Validate token**: Confirm it works with GitHub API
+   ```bash
+   curl -s -H "Authorization: token $BOT_GITHUB_TOKEN" https://api.github.com/user
+   ```
+
+3. **Configure git credentials**: Set up git to use the token
+   ```bash
+   docker exec <container> git config --global credential.helper store
+   docker exec <container> bash -c "echo 'https://TheNeerajGarg:$BOT_GITHUB_TOKEN@github.com' > ~/.git-credentials"
+   docker exec <container> chmod 600 ~/.git-credentials
+   ```
+
+**DO NOT**:
+- ❌ Ask user for token (it's in environment)
+- ❌ Search filesystem for per-repo token files
+- ❌ Create new tokens
+
+**Token locations** (single source of truth):
+- Host: `~/.config/NeerajDev/tokens.env` (sourced by `~/.zshrc`)
+- All containers: `$BOT_GITHUB_TOKEN` environment variable (inherited from host)
+
+**Full details**: See `~/NeerajDev/org-standards/claude-code/GITHUB_AUTH_CONTEXT.md`
+
 ## Global Philosophy
 
 ### Root Cause Fixes Over Workarounds
