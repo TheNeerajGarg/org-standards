@@ -51,7 +51,7 @@ fi
 # Step 3: Verify all repos are present
 echo ""
 echo "🔍 Verifying repository structure..."
-REPOS=("fashion-extract" "syra" "syra-playground" "org-standards")
+REPOS=("StyleGuru" "syra" "syra-playground" "org-standards")
 ALL_PRESENT=true
 
 for repo in "${REPOS[@]}"; do
@@ -73,7 +73,7 @@ echo "📂 Workspace Structure:"
 echo "   $NEERAJDEV_DIR/"
 echo "   ├── .devcontainer/           → org-standards/.devcontainer/"
 echo "   ├── neerajdev.code-workspace"
-echo "   ├── fashion-extract/"
+echo "   ├── StyleGuru/"
 echo "   ├── syra/"
 echo "   ├── syra-playground/"
 echo "   └── org-standards/"
