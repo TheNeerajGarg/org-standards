@@ -13,7 +13,7 @@ Exit codes:
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Set
+from typing import Any
 
 try:
     import jsonschema
@@ -24,7 +24,7 @@ except ImportError as e:
     sys.exit(1)
 
 
-def load_yaml(path: Path) -> Dict[str, Any]:
+def load_yaml(path: Path) -> dict[str, Any]:
     """Load YAML file."""
     try:
         with open(path) as f:
@@ -38,7 +38,7 @@ def load_yaml(path: Path) -> Dict[str, Any]:
         sys.exit(1)
 
 
-def validate_schema(config: Dict[str, Any], schema_path: Path) -> bool:
+def validate_schema(config: dict[str, Any], schema_path: Path) -> bool:
     """Validate config against JSON Schema."""
     try:
         with open(schema_path) as f:
@@ -47,7 +47,7 @@ def validate_schema(config: Dict[str, Any], schema_path: Path) -> bool:
         print(f"❌ Schema file not found: {schema_path}")
         return False
     except json.JSONDecodeError as e:
-        print(f"❌ Schema JSON syntax error:")
+        print("❌ Schema JSON syntax error:")
         print(f"   {e}")
         return False
 
@@ -55,16 +55,16 @@ def validate_schema(config: Dict[str, Any], schema_path: Path) -> bool:
         jsonschema.validate(instance=config, schema=schema)
         return True
     except jsonschema.ValidationError as e:
-        print(f"❌ Schema validation failed:")
+        print("❌ Schema validation failed:")
         print(f"   {e.message}")
         if e.absolute_path:
             print(f"   Path: {' -> '.join(str(p) for p in e.absolute_path)}")
         return False
 
 
-def validate_semantic(config: Dict[str, Any]) -> bool:
+def validate_semantic(config: dict[str, Any]) -> bool:
     """Validate semantic rules (circular deps, undefined gates, etc.)."""
-    errors: List[str] = []
+    errors: list[str] = []
 
     gates = config.get("gates", {})
     execution_order = config.get("execution_order", [])
@@ -90,8 +90,8 @@ def validate_semantic(config: Dict[str, Any]) -> bool:
             errors.append(f"Gate '{gate_name}' depends on itself (circular dependency)")
 
         # Check transitive circular deps
-        visited: Set[str] = set()
-        stack: List[str] = [gate_name]
+        visited: set[str] = set()
+        stack: list[str] = [gate_name]
 
         while stack:
             current = stack.pop()
