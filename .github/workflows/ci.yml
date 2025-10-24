@@ -44,7 +44,6 @@ jobs:
           mypy . || true  # Don't fail on type errors yet (grandfather policy)
 
       - name: Run tests with coverage
-        continue-on-error: true  # TEMPORARY: Integration tests have pre-existing branch naming issues
         run: |
           echo "🧪 Running tests with coverage..."
           pytest --cov=. --cov-report=xml --cov-report=term-missing
