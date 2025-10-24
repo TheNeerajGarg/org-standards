@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Quality Gate Configuration",
+  "type": "object",
+  "required": ["version", "gates", "execution_order"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["enabled", "tool", "description", "required"],
+        "properties": {
+          "enabled": {"type": "boolean"},
+          "tool": {"type": "string"},
+          "command": {"type": "string"},
+          "threshold": {"type": "number", "minimum": 0, "maximum": 100},
+          "description": {"type": "string"},
+          "required": {"type": "boolean"},
+          "timeout_seconds": {"type": "integer", "minimum": 1}
+        }
+      }
+    },
+    "execution_order": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    }
+  }
+}
