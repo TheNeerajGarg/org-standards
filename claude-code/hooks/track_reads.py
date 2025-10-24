@@ -81,7 +81,7 @@ def main():
         "timestamp": datetime.now().isoformat(),
         "file": file_path,
         "session": session_id,
-        "type": "Read"
+        "type": "Read",
     }
 
     # Write to both session file and aggregate
