@@ -113,17 +113,25 @@ def check_message_count():
             file=sys.stderr,
         )
         print(
-            f"   💰 Every message now includes {message_count}+ previous messages", file=sys.stderr
+            f"   💰 Every message now includes {message_count}+ previous messages",
+            file=sys.stderr,
         )
-        print("   📊 Context size is cumulative and grows with each interaction\n", file=sys.stderr)
+        print(
+            "   📊 Context size is cumulative and grows with each interaction\n",
+            file=sys.stderr,
+        )
 
     elif message_count > MAX_MESSAGES:
         # Show periodic reminders every 5 messages after limit
         if (message_count - MAX_MESSAGES) % 5 == 0:
             warn(
-                f"High context: {message_count} messages (recommended: {MAX_MESSAGES})", "CRITICAL"
+                f"High context: {message_count} messages (recommended: {MAX_MESSAGES})",
+                "CRITICAL",
             )
-            print("   💸 API costs are likely 3-5× normal due to large context\n", file=sys.stderr)
+            print(
+                "   💸 API costs are likely 3-5× normal due to large context\n",
+                file=sys.stderr,
+            )
 
 
 def check_large_file_read(tool_name: str, result: str, file_path: str | None = None):
@@ -142,14 +150,24 @@ def check_large_file_read(tool_name: str, result: str, file_path: str | None = N
             "   📄 This file will be in context for ALL future API calls in this session",
             file=sys.stderr,
         )
-        print(f"   📊 Large reads so far: {large_reads}/{MAX_LARGE_FILE_READS}", file=sys.stderr)
+        print(
+            f"   📊 Large reads so far: {large_reads}/{MAX_LARGE_FILE_READS}",
+            file=sys.stderr,
+        )
 
         if large_reads >= MAX_LARGE_FILE_READS:
-            print(f"   💸 COST ALERT: {large_reads} large files in context!", file=sys.stderr)
-            print("   💡 Consider starting fresh session to reset context\n", file=sys.stderr)
+            print(
+                f"   💸 COST ALERT: {large_reads} large files in context!",
+                file=sys.stderr,
+            )
+            print(
+                "   💡 Consider starting fresh session to reset context\n",
+                file=sys.stderr,
+            )
         else:
             print(
-                "   💡 Tip: Use Grep to search instead of reading entire files\n", file=sys.stderr
+                "   💡 Tip: Use Grep to search instead of reading entire files\n",
+                file=sys.stderr,
             )
 
 
@@ -179,7 +197,9 @@ def check_total_context():
             f"      - Large files: {large_file_count} × ~30K = ~{large_file_count * 30000:,} tokens",
             file=sys.stderr,
         )
-        print("   🔄 STRONGLY RECOMMEND: Exit and start fresh session\n", file=sys.stderr)
+        print(
+            "   🔄 STRONGLY RECOMMEND: Exit and start fresh session\n", file=sys.stderr
+        )
 
 
 def main():

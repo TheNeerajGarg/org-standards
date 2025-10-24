@@ -157,7 +157,9 @@ class MCPConfigValidator:
         # Basic check: alphanumeric + underscore + dots
         import re
 
-        return bool(re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$", name))
+        return bool(
+            re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$", name)
+        )
 
     def print_results(self) -> None:
         """Print validation results."""

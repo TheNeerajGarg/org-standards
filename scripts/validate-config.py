@@ -81,7 +81,9 @@ def validate_semantic(config: dict[str, Any]) -> bool:
     enabled_gates = {name for name, cfg in gates.items() if cfg.get("enabled", False)}
     missing_from_order = enabled_gates - ordered_gates
     if missing_from_order:
-        errors.append(f"Enabled gates missing from execution_order: {missing_from_order}")
+        errors.append(
+            f"Enabled gates missing from execution_order: {missing_from_order}"
+        )
 
     # Rule 3: Check circular dependencies
     for gate_name, gate_config in gates.items():
@@ -102,7 +104,9 @@ def validate_semantic(config: dict[str, Any]) -> bool:
             current_deps = gates.get(current, {}).get("depends_on", [])
             for dep in current_deps:
                 if dep == gate_name:
-                    errors.append(f"Circular dependency detected: {gate_name} -> ... -> {dep}")
+                    errors.append(
+                        f"Circular dependency detected: {gate_name} -> ... -> {dep}"
+                    )
                     break
                 if dep in gates:
                     stack.append(dep)
@@ -140,7 +144,16 @@ def validate_semantic(config: dict[str, Any]) -> bool:
         errors.append(f"Invalid version format '{version}' (expected X.Y.Z)")
 
     # Rule 7: Required tools exist (basic check)
-    known_tools = {"pytest", "diff-cover", "mypy", "ruff", "coverage", "bandit", "black", "flake8"}
+    known_tools = {
+        "pytest",
+        "diff-cover",
+        "mypy",
+        "ruff",
+        "coverage",
+        "bandit",
+        "black",
+        "flake8",
+    }
     for gate_name, gate_config in gates.items():
         tool = gate_config.get("tool", "")
         if tool and tool not in known_tools:

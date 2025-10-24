@@ -24,7 +24,9 @@ def test_repo(tmp_path):
     # Initialize git
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
     subprocess.run(["git", "config", "user.name", "Test"], cwd=repo, check=True)
-    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"], cwd=repo, check=True
+    )
 
     # Link org-standards (symlink to actual org-standards)
     org_standards_src = Path(__file__).parent.parent

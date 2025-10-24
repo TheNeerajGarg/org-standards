@@ -52,7 +52,11 @@ def _cleanup_temp_file(temp_path: str):
         # Log but don't raise - we're already handling an error
         logger.warning(
             "Could not clean up temp file",
-            extra={"temp_path": temp_path, "error": str(e), "error_type": type(e).__name__},
+            extra={
+                "temp_path": temp_path,
+                "error": str(e),
+                "error_type": type(e).__name__,
+            },
         )
 
 
@@ -167,7 +171,9 @@ class SessionManager:
         # Priority 1: Environment variable
         session_id = os.environ.get("CLAUDE_SESSION_ID")
         if session_id:
-            logger.info("Using session ID from environment", extra={"session_id": session_id})
+            logger.info(
+                "Using session ID from environment", extra={"session_id": session_id}
+            )
             return session_id
 
         # Priority 2: Atomic check-and-create with file lock
@@ -289,7 +295,10 @@ def atomic_write(filepath: Path):
     # Register for cleanup on abnormal exit
     _temp_files.append(temp_path)
 
-    logger.debug("Starting atomic write", extra={"filepath": str(filepath), "temp_path": temp_path})
+    logger.debug(
+        "Starting atomic write",
+        extra={"filepath": str(filepath), "temp_path": temp_path},
+    )
 
     success = False
     try:
@@ -352,7 +361,8 @@ def file_lock(filepath: Path, timeout: float = 5.0, stale_threshold: float = 300
     lock_file.touch(exist_ok=True)
 
     logger.debug(
-        "Attempting to acquire file lock", extra={"filepath": str(filepath), "timeout": timeout}
+        "Attempting to acquire file lock",
+        extra={"filepath": str(filepath), "timeout": timeout},
     )
 
     try:
@@ -381,7 +391,8 @@ def file_lock(filepath: Path, timeout: float = 5.0, stale_threshold: float = 300
                 # Acquired lock - update mtime to mark as active
                 lock_file.touch()
                 logger.debug(
-                    "Lock acquired", extra={"filepath": str(filepath), "lock_file": str(lock_file)}
+                    "Lock acquired",
+                    extra={"filepath": str(filepath), "lock_file": str(lock_file)},
                 )
                 break
 
@@ -421,7 +432,10 @@ def file_lock(filepath: Path, timeout: float = 5.0, stale_threshold: float = 300
                             # Log error and continue waiting for timeout
                             logger.error(
                                 "Lock is stale but still held - possible crashed process",
-                                extra={"lock_file": str(lock_file), "lock_age": lock_age},
+                                extra={
+                                    "lock_file": str(lock_file),
+                                    "lock_age": lock_age,
+                                },
                             )
                             # Continue waiting - will hit overall timeout if truly stuck
 
@@ -521,7 +535,9 @@ class FailureTracker:
                 )
         except PermissionError as e:
             # Permission denied - fallback to emergency log in /tmp
-            emergency_log = Path(f"/tmp/failures-emergency-{self.session.session_id}.jsonl")
+            emergency_log = Path(
+                f"/tmp/failures-emergency-{self.session.session_id}.jsonl"
+            )
 
             logger.warning(
                 "Permission denied on failure log - using emergency log",
@@ -537,7 +553,9 @@ class FailureTracker:
                 # Write to emergency log in /tmp (usually writable)
                 with open(emergency_log, "a") as f:
                     f.write(json.dumps(failure_record) + "\n")
-                    f.write("# WARNING: Written to emergency log due to permission error\n")
+                    f.write(
+                        "# WARNING: Written to emergency log due to permission error\n"
+                    )
                     f.flush()
                 logger.info(
                     "Failure written to emergency log",
@@ -655,7 +673,9 @@ class FailureTracker:
                     for line in f:
                         try:
                             record = json.loads(line.strip())
-                            timestamp = datetime.fromisoformat(record["timestamp"]).timestamp()
+                            timestamp = datetime.fromisoformat(
+                                record["timestamp"]
+                            ).timestamp()
                             if timestamp >= cutoff_time:
                                 recent_failures.append(record)
                         except (json.JSONDecodeError, KeyError, ValueError):
@@ -666,7 +686,9 @@ class FailureTracker:
                 for line in f:
                     try:
                         record = json.loads(line.strip())
-                        timestamp = datetime.fromisoformat(record["timestamp"]).timestamp()
+                        timestamp = datetime.fromisoformat(
+                            record["timestamp"]
+                        ).timestamp()
                         if timestamp >= cutoff_time:
                             recent_failures.append(record)
                     except (json.JSONDecodeError, KeyError, ValueError):
@@ -773,7 +795,8 @@ class FailureTracker:
         archive_dir = TRACKER_BASE / "archive"
 
         logger.info(
-            "Starting session cleanup", extra={"days": days, "sessions_dir": str(sessions_dir)}
+            "Starting session cleanup",
+            extra={"days": days, "sessions_dir": str(sessions_dir)},
         )
 
         if not sessions_dir.exists():
@@ -793,11 +816,15 @@ class FailureTracker:
                 try:
                     with open(session_info) as f:
                         info = json.load(f)
-                        start_time = datetime.fromisoformat(info["start_time"]).timestamp()
+                        start_time = datetime.fromisoformat(
+                            info["start_time"]
+                        ).timestamp()
 
                         if start_time < cutoff:
                             # Archive to date-based directory
-                            date_str = datetime.fromtimestamp(start_time).strftime("%Y-%m-%d")
+                            date_str = datetime.fromtimestamp(start_time).strftime(
+                                "%Y-%m-%d"
+                            )
                             dest = archive_dir / date_str / session_dir.name
                             dest.parent.mkdir(parents=True, exist_ok=True)
 
@@ -808,7 +835,10 @@ class FailureTracker:
                             archived_count += 1
                             logger.info(
                                 "Archived session",
-                                extra={"session_id": session_dir.name, "archive_path": str(dest)},
+                                extra={
+                                    "session_id": session_dir.name,
+                                    "archive_path": str(dest),
+                                },
                             )
 
                 except (json.JSONDecodeError, KeyError, OSError) as e:
@@ -818,10 +848,15 @@ class FailureTracker:
                         extra={"session_dir": session_dir.name, "error": str(e)},
                         exc_info=True,
                     )
-                    print(f"Warning: Could not archive {session_dir.name}: {e}", file=sys.stderr)
+                    print(
+                        f"Warning: Could not archive {session_dir.name}: {e}",
+                        file=sys.stderr,
+                    )
                     continue
 
-        logger.info("Completed session cleanup", extra={"archived_count": archived_count})
+        logger.info(
+            "Completed session cleanup", extra={"archived_count": archived_count}
+        )
         return archived_count
 
 
@@ -829,7 +864,10 @@ def main():
     """Entry point for hook scripts."""
     if len(sys.argv) < 2:
         print("Usage: failure_tracker.py <command>", file=sys.stderr)
-        print("Commands: log, analyze, alerts, clear, cleanup, session-id", file=sys.stderr)
+        print(
+            "Commands: log, analyze, alerts, clear, cleanup, session-id",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     command = sys.argv[1]
@@ -865,7 +903,10 @@ def main():
     elif command == "cleanup":
         days = int(sys.argv[2]) if len(sys.argv) > 2 else 7
         archived_count = tracker.cleanup_old_sessions(days=days)
-        print(f"Archived {archived_count} sessions older than {days} days", file=sys.stderr)
+        print(
+            f"Archived {archived_count} sessions older than {days} days",
+            file=sys.stderr,
+        )
 
     else:
         print(f"Unknown command: {command}", file=sys.stderr)

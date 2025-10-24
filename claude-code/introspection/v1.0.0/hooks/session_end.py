@@ -38,7 +38,8 @@ def main():
         tracker = FailureTracker()
 
         logger.debug(
-            "Checking for pending alerts", extra={"session_id": tracker.session.session_id}
+            "Checking for pending alerts",
+            extra={"session_id": tracker.session.session_id},
         )
         # Check for pending alerts
         alerts = tracker.get_pending_alerts()
@@ -50,7 +51,10 @@ def main():
 
         logger.info(
             "Pending alerts found, generating introspection",
-            extra={"alert_count": len(alerts), "session_id": tracker.session.session_id},
+            extra={
+                "alert_count": len(alerts),
+                "session_id": tracker.session.session_id,
+            },
         )
 
         # Generate introspection document
@@ -63,10 +67,15 @@ def main():
         repo_path = Path.cwd()
         output_file = generator.save_to_repo(introspection_md, repo_path, session_id)
 
-        logger.info("Introspection document created", extra={"output_file": str(output_file)})
+        logger.info(
+            "Introspection document created", extra={"output_file": str(output_file)}
+        )
 
         print(f"✅ Created self-introspection: {output_file}", file=sys.stderr)
-        print(f"🚨 ATTENTION: Repeated failures detected in session {session_id}!", file=sys.stderr)
+        print(
+            f"🚨 ATTENTION: Repeated failures detected in session {session_id}!",
+            file=sys.stderr,
+        )
         print(f"📝 Review: {output_file}", file=sys.stderr)
 
         # Clear alerts after processing

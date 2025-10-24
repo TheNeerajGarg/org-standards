@@ -49,7 +49,8 @@ class PatternDetector:
         # Collect failures from active sessions
         if self.sessions_dir.exists():
             logger.debug(
-                "Analyzing active sessions", extra={"sessions_dir": str(self.sessions_dir)}
+                "Analyzing active sessions",
+                extra={"sessions_dir": str(self.sessions_dir)},
             )
             for session_dir in self.sessions_dir.iterdir():
                 if not session_dir.is_dir():
@@ -59,13 +60,17 @@ class PatternDetector:
                 all_failures.extend(failures)
                 logger.debug(
                     "Read failures from session",
-                    extra={"session_id": session_dir.name, "failure_count": len(failures)},
+                    extra={
+                        "session_id": session_dir.name,
+                        "failure_count": len(failures),
+                    },
                 )
 
         # Collect failures from recent archives
         if self.archive_dir.exists():
             logger.debug(
-                "Analyzing archived sessions", extra={"archive_dir": str(self.archive_dir)}
+                "Analyzing archived sessions",
+                extra={"archive_dir": str(self.archive_dir)},
             )
             for date_dir in self.archive_dir.iterdir():
                 if not date_dir.is_dir():
@@ -116,7 +121,9 @@ class PatternDetector:
 
         return result
 
-    def _read_session_failures(self, session_dir: Path, cutoff_timestamp: float) -> list[dict]:
+    def _read_session_failures(
+        self, session_dir: Path, cutoff_timestamp: float
+    ) -> list[dict]:
         """Read failures from a session directory."""
         failures: list[dict] = []
         failure_log = session_dir / "failures.jsonl"
@@ -129,7 +136,9 @@ class PatternDetector:
                 for line in f:
                     try:
                         record = json.loads(line.strip())
-                        timestamp = datetime.fromisoformat(record["timestamp"]).timestamp()
+                        timestamp = datetime.fromisoformat(
+                            record["timestamp"]
+                        ).timestamp()
 
                         if timestamp >= cutoff_timestamp:
                             failures.append(record)
@@ -147,7 +156,9 @@ class PatternDetector:
         Returns:
             List of pattern dictionaries
         """
-        logger.debug("Detecting patterns in failures", extra={"failure_count": len(failures)})
+        logger.debug(
+            "Detecting patterns in failures", extra={"failure_count": len(failures)}
+        )
         patterns = []
 
         # Pattern 1: Recurring error types
@@ -163,7 +174,9 @@ class PatternDetector:
                     "error_type": error_type,
                     "occurrences": len(error_failures),
                     "affected_sessions": len(sessions),
-                    "severity": self._calculate_severity(len(error_failures), len(sessions)),
+                    "severity": self._calculate_severity(
+                        len(error_failures), len(sessions)
+                    ),
                     "first_seen": error_failures[0]["timestamp"],
                     "last_seen": error_failures[-1]["timestamp"],
                     "sample_message": error_failures[-1]["error_message"],
@@ -194,8 +207,12 @@ class PatternDetector:
                             "tool_name": tool_name,
                             "occurrences": len(tool_failures),
                             "affected_sessions": len(sessions),
-                            "severity": self._calculate_severity(len(tool_failures), len(sessions)),
-                            "common_errors": self._get_common_errors(tool_failures, top=3),
+                            "severity": self._calculate_severity(
+                                len(tool_failures), len(sessions)
+                            ),
+                            "common_errors": self._get_common_errors(
+                                tool_failures, top=3
+                            ),
                         }
                     )
 
@@ -218,14 +235,18 @@ class PatternDetector:
                             "occurrences": len(host_failures),
                             "affected_sessions": host_sessions,
                             "severity": "HIGH",
-                            "common_errors": self._get_common_errors(host_failures, top=3),
+                            "common_errors": self._get_common_errors(
+                                host_failures, top=3
+                            ),
                         }
                     )
 
         # Sort by severity
         patterns.sort(
             key=lambda p: (
-                {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}.get(p.get("severity", "LOW"), 3),
+                {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}.get(
+                    p.get("severity", "LOW"), 3
+                ),
                 -p.get("occurrences", 0),
             )
         )
@@ -244,7 +265,9 @@ class PatternDetector:
         else:
             return "LOW"
 
-    def _get_common_errors(self, failures: list[dict], top: int = 3) -> list[tuple[str, int]]:
+    def _get_common_errors(
+        self, failures: list[dict], top: int = 3
+    ) -> list[tuple[str, int]]:
         """Get most common error types from failures."""
         error_types = [f["error_type"] for f in failures]
         counter = Counter(error_types)
