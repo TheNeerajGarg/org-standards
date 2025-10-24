@@ -115,9 +115,7 @@ def check_message_count():
         print(
             f"   💰 Every message now includes {message_count}+ previous messages", file=sys.stderr
         )
-        print(
-            "   📊 Context size is cumulative and grows with each interaction\n", file=sys.stderr
-        )
+        print("   📊 Context size is cumulative and grows with each interaction\n", file=sys.stderr)
 
     elif message_count > MAX_MESSAGES:
         # Show periodic reminders every 5 messages after limit

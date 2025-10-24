@@ -208,9 +208,7 @@ def _execute_gate(gate: GateConfig) -> GateResult:
             )
 
     # Execute command
-    command = gate.command or (
-        " && ".join(gate.commands.values()) if gate.commands else ""
-    )
+    command = gate.command or (" && ".join(gate.commands.values()) if gate.commands else "")
 
     # Substitute placeholders
     if gate.threshold:
