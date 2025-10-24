@@ -2,10 +2,9 @@
 
 Tests configuration loading, validation, and parsing logic.
 """
-import json
+
 import sys
 from pathlib import Path
-from unittest.mock import Mock, patch
 
 import pytest
 import yaml
@@ -18,14 +17,14 @@ from quality_gates import (
     GateConfig,
     GateResult,
     QualityGatesConfig,
-    load_config,
     _merge_configs,
     _parse_config,
     _validate_config,
+    load_config,
 )
 
-
 # Fixtures
+
 
 @pytest.fixture
 def valid_config_dict():
@@ -269,11 +268,7 @@ def test_load_config_with_override(tmp_path, valid_config_dict):
     with open(base_file, "w") as f:
         yaml.dump(valid_config_dict, f)
 
-    override = {
-        "gates": {
-            "coverage": {"threshold": 60}
-        }
-    }
+    override = {"gates": {"coverage": {"threshold": 60}}}
     with open(override_file, "w") as f:
         yaml.dump(override, f)
 

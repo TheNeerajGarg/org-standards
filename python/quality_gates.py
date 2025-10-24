@@ -21,7 +21,7 @@ import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 
@@ -33,13 +33,13 @@ class GateConfig:
     name: str
     enabled: bool
     tool: str
-    command: Optional[str] = None
-    commands: Optional[Dict[str, str]] = None
-    threshold: Optional[int] = None
+    command: str | None = None
+    commands: dict[str, str] | None = None
+    threshold: int | None = None
     description: str = ""
     required: bool = True
-    depends_on: List[str] = field(default_factory=list)
-    omit_patterns: List[str] = field(default_factory=list)
+    depends_on: list[str] = field(default_factory=list)
+    omit_patterns: list[str] = field(default_factory=list)
     fail_message: str = ""
     timeout_seconds: int = 300
 
@@ -49,10 +49,10 @@ class QualityGatesConfig:
     """Complete quality gate configuration."""
 
     version: str
-    gates: Dict[str, GateConfig]
-    execution_order: List[str]
-    emergency_bypass: Dict[str, Any]
-    override_file: Optional[str] = None
+    gates: dict[str, GateConfig]
+    execution_order: list[str]
+    emergency_bypass: dict[str, Any]
+    override_file: str | None = None
 
 
 @dataclass
@@ -74,13 +74,13 @@ class ExecutionResults:
     failed_count: int
     total_count: int
     duration_seconds: float
-    results: List[GateResult]
-    failures: List[GateResult]
+    results: list[GateResult]
+    failures: list[GateResult]
 
 
 def load_config(
-    base_config: Optional[Path] = None,
-    override_config: Optional[Path] = None,
+    base_config: Path | None = None,
+    override_config: Path | None = None,
 ) -> QualityGatesConfig:
     """Load quality gate configuration with optional overrides.
 
@@ -110,7 +110,7 @@ def load_config(
         override_file = base.get("override_file", "quality-gates.local.yaml")
         override_config = Path(override_file)
 
-    overrides = {}
+    overrides: dict[str, Any] = {}
     if override_config.exists():
         with open(override_config) as f:
             overrides = yaml.safe_load(f) or {}
@@ -208,7 +208,9 @@ def _execute_gate(gate: GateConfig) -> GateResult:
             )
 
     # Execute command
-    command = gate.command or " && ".join(gate.commands.values())
+    command = gate.command or (
+        " && ".join(gate.commands.values()) if gate.commands else ""
+    )
 
     # Substitute placeholders
     if gate.threshold:
@@ -250,7 +252,7 @@ def _execute_gate(gate: GateConfig) -> GateResult:
         )
 
 
-def _merge_configs(base: Dict, overrides: Dict) -> Dict:
+def _merge_configs(base: dict, overrides: dict) -> dict:
     """Deep merge override config into base config.
 
     Args:
@@ -276,7 +278,7 @@ def _merge_configs(base: Dict, overrides: Dict) -> Dict:
     return result
 
 
-def _validate_config(config: Dict) -> None:
+def _validate_config(config: dict) -> None:
     """Validate config structure and consistency.
 
     Args:
@@ -298,7 +300,7 @@ def _validate_config(config: Dict) -> None:
         raise ValueError(f"execution_order references undefined gates: {invalid}")
 
 
-def _parse_config(config: Dict) -> QualityGatesConfig:
+def _parse_config(config: dict) -> QualityGatesConfig:
     """Parse raw config dict into typed dataclasses.
 
     Args:

@@ -2,16 +2,15 @@
 
 Tests real hook execution with temporary git repositories.
 """
+
 import json
 import os
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 from textwrap import dedent
 
 import pytest
-
 
 # Fixtures
 
@@ -40,7 +39,8 @@ def test_repo(tmp_path):
 
     # Create pyproject.toml for pytest-cov
     pyproject = repo / "pyproject.toml"
-    pyproject.write_text(dedent("""
+    pyproject.write_text(
+        dedent("""
         [tool.pytest.ini_options]
         testpaths = ["tests"]
 
@@ -51,7 +51,8 @@ def test_repo(tmp_path):
             "*/playground/*",
             "*/.ai-sessions/*",
         ]
-    """))
+    """)
+    )
 
     # Create src and tests directories
     (repo / "src").mkdir()
@@ -115,7 +116,10 @@ def git_push(repo: Path, env: dict = None) -> subprocess.CompletedProcess:
 def test_hook_blocks_low_coverage(test_repo, disable_hook):
     """Hook blocks push when diff coverage <80%."""
     # Create file with untested code
-    create_code_file(test_repo, "src/calculator.py", """
+    create_code_file(
+        test_repo,
+        "src/calculator.py",
+        """
         def add(a, b):
             return a + b
 
@@ -124,15 +128,20 @@ def test_hook_blocks_low_coverage(test_repo, disable_hook):
 
         def multiply(a, b):
             return a * b
-    """)
+    """,
+    )
 
     # Create partial tests (only 1/3 functions = 33%)
-    create_code_file(test_repo, "tests/test_calculator.py", """
+    create_code_file(
+        test_repo,
+        "tests/test_calculator.py",
+        """
         from src.calculator import add
 
         def test_add():
             assert add(2, 3) == 5
-    """)
+    """,
+    )
 
     git_add_commit(test_repo, "Add calculator with partial tests")
 
@@ -152,16 +161,23 @@ def test_hook_blocks_low_coverage(test_repo, disable_hook):
 def test_hook_allows_high_coverage(test_repo, disable_hook):
     """Hook allows push when diff coverage ≥80%."""
     # Create file with well-tested code
-    create_code_file(test_repo, "src/calculator.py", """
+    create_code_file(
+        test_repo,
+        "src/calculator.py",
+        """
         def add(a, b):
             return a + b
 
         def subtract(a, b):
             return a - b
-    """)
+    """,
+    )
 
     # Create comprehensive tests (100%)
-    create_code_file(test_repo, "tests/test_calculator.py", """
+    create_code_file(
+        test_repo,
+        "tests/test_calculator.py",
+        """
         from src.calculator import add, subtract
 
         def test_add():
@@ -169,7 +185,8 @@ def test_hook_allows_high_coverage(test_repo, disable_hook):
 
         def test_subtract():
             assert subtract(5, 3) == 2
-    """)
+    """,
+    )
 
     git_add_commit(test_repo, "Add calculator with full tests")
 
@@ -188,10 +205,14 @@ def test_hook_allows_high_coverage(test_repo, disable_hook):
 def test_emergency_bypass_logs_json(test_repo, disable_hook):
     """Emergency bypass skips gates and logs JSON."""
     # Create untested code
-    create_code_file(test_repo, "src/untested.py", """
+    create_code_file(
+        test_repo,
+        "src/untested.py",
+        """
         def untested():
             pass
-    """)
+    """,
+    )
 
     git_add_commit(test_repo, "Emergency fix")
 
@@ -201,10 +222,13 @@ def test_emergency_bypass_logs_json(test_repo, disable_hook):
     hook_backup.rename(hook)
 
     # Push with emergency bypass
-    result = git_push(test_repo, env={
-        "EMERGENCY_PUSH": "1",
-        "EMERGENCY_REASON": "Production outage - rollback needed",
-    })
+    result = git_push(
+        test_repo,
+        env={
+            "EMERGENCY_PUSH": "1",
+            "EMERGENCY_REASON": "Production outage - rollback needed",
+        },
+    )
 
     # Should succeed (bypassed)
     assert result.returncode == 0 or "EMERGENCY PUSH" in result.stderr
@@ -226,24 +250,36 @@ def test_emergency_bypass_logs_json(test_repo, disable_hook):
 def test_exploratory_code_exempt(test_repo, disable_hook):
     """Code in playground/ is omitted from coverage."""
     # Create untested exploratory code
-    create_code_file(test_repo, "playground/experiment.py", """
+    create_code_file(
+        test_repo,
+        "playground/experiment.py",
+        """
         def experiment():
             # No tests needed - exploratory
             pass
-    """)
+    """,
+    )
 
     # Create production code with tests
-    create_code_file(test_repo, "src/main.py", """
+    create_code_file(
+        test_repo,
+        "src/main.py",
+        """
         def main():
             pass
-    """)
+    """,
+    )
 
-    create_code_file(test_repo, "tests/test_main.py", """
+    create_code_file(
+        test_repo,
+        "tests/test_main.py",
+        """
         from src.main import main
 
         def test_main():
             main()
-    """)
+    """,
+    )
 
     git_add_commit(test_repo, "Add exploratory + prod code")
 
@@ -261,12 +297,10 @@ def test_exploratory_code_exempt(test_repo, disable_hook):
 
 def test_hook_loads_config(test_repo):
     """Hook successfully loads quality-gates.yaml."""
-    # Run hook script directly to test config loading
-    hook_script = test_repo / ".git" / "hooks" / "pre-push"
-
     # Create a simple test that just loads config
     test_script = test_repo / "test_config_load.py"
-    test_script.write_text(dedent("""
+    test_script.write_text(
+        dedent("""
         import sys
         from pathlib import Path
 
@@ -281,7 +315,8 @@ def test_hook_loads_config(test_repo):
         except Exception as e:
             print(f'❌ Failed to load config: {e}')
             sys.exit(1)
-    """))
+    """)
+    )
 
     result = subprocess.run(
         ["python3", "test_config_load.py"],
@@ -310,15 +345,18 @@ def test_repo_specific_override(test_repo, disable_hook):
     """Local override file customizes threshold."""
     # Create override config
     override = test_repo / "quality-gates.local.yaml"
-    override.write_text(dedent("""
+    override.write_text(
+        dedent("""
         gates:
           coverage:
             threshold: 60
-    """))
+    """)
+    )
 
     # Test that override is loaded
     test_script = test_repo / "test_override.py"
-    test_script.write_text(dedent("""
+    test_script.write_text(
+        dedent("""
         import sys
         from pathlib import Path
 
@@ -340,7 +378,8 @@ def test_repo_specific_override(test_repo, disable_hook):
         else:
             print(f'❌ Override not applied (got {threshold}, expected 60)')
             sys.exit(1)
-    """))
+    """)
+    )
 
     result = subprocess.run(
         ["python3", "test_override.py"],
@@ -365,7 +404,8 @@ def test_config_validation_in_hook(test_repo):
 
         # Try to load config
         test_script = test_repo / "test_invalid_config.py"
-        test_script.write_text(dedent("""
+        test_script.write_text(
+            dedent("""
             import sys
             from pathlib import Path
 
@@ -379,7 +419,8 @@ def test_config_validation_in_hook(test_repo):
             except Exception as e:
                 print(f'✅ Caught invalid config: {type(e).__name__}')
                 sys.exit(0)
-        """))
+        """)
+        )
 
         result = subprocess.run(
             ["python3", "test_invalid_config.py"],
