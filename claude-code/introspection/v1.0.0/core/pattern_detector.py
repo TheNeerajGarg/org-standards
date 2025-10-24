@@ -48,9 +48,7 @@ class PatternDetector:
 
         # Collect failures from active sessions
         if self.sessions_dir.exists():
-            logger.debug(
-                "Analyzing active sessions", extra={"sessions_dir": str(self.sessions_dir)}
-            )
+            logger.debug("Analyzing active sessions", extra={"sessions_dir": str(self.sessions_dir)})
             for session_dir in self.sessions_dir.iterdir():
                 if not session_dir.is_dir():
                     continue
@@ -64,9 +62,7 @@ class PatternDetector:
 
         # Collect failures from recent archives
         if self.archive_dir.exists():
-            logger.debug(
-                "Analyzing archived sessions", extra={"archive_dir": str(self.archive_dir)}
-            )
+            logger.debug("Analyzing archived sessions", extra={"archive_dir": str(self.archive_dir)})
             for date_dir in self.archive_dir.iterdir():
                 if not date_dir.is_dir():
                     continue
@@ -359,10 +355,7 @@ class PatternDetector:
                 "session2": session2["total_failures"],
                 "difference": session1["total_failures"] - session2["total_failures"],
             },
-            "common_errors": set(session1["failures_by_type"].keys())
-            & set(session2["failures_by_type"].keys()),
-            "unique_to_session1": set(session1["failures_by_type"].keys())
-            - set(session2["failures_by_type"].keys()),
-            "unique_to_session2": set(session2["failures_by_type"].keys())
-            - set(session1["failures_by_type"].keys()),
+            "common_errors": set(session1["failures_by_type"].keys()) & set(session2["failures_by_type"].keys()),
+            "unique_to_session1": set(session1["failures_by_type"].keys()) - set(session2["failures_by_type"].keys()),
+            "unique_to_session2": set(session2["failures_by_type"].keys()) - set(session1["failures_by_type"].keys()),
         }

@@ -282,9 +282,7 @@ def atomic_write(filepath: Path):
     Registers temp files for cleanup on abnormal exit to prevent disk space leaks.
     """
     # Write to temp file in same directory (same filesystem)
-    temp_fd, temp_path = tempfile.mkstemp(
-        dir=filepath.parent, prefix=f".{filepath.name}.tmp.", suffix=".tmp"
-    )
+    temp_fd, temp_path = tempfile.mkstemp(dir=filepath.parent, prefix=f".{filepath.name}.tmp.", suffix=".tmp")
 
     # Register for cleanup on abnormal exit
     _temp_files.append(temp_path)
@@ -351,9 +349,7 @@ def file_lock(filepath: Path, timeout: float = 5.0, stale_threshold: float = 300
     lock_file = filepath.parent / f".{filepath.name}.lock"
     lock_file.touch(exist_ok=True)
 
-    logger.debug(
-        "Attempting to acquire file lock", extra={"filepath": str(filepath), "timeout": timeout}
-    )
+    logger.debug("Attempting to acquire file lock", extra={"filepath": str(filepath), "timeout": timeout})
 
     try:
         fd = os.open(str(lock_file), os.O_RDWR)
@@ -380,9 +376,7 @@ def file_lock(filepath: Path, timeout: float = 5.0, stale_threshold: float = 300
                 fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 # Acquired lock - update mtime to mark as active
                 lock_file.touch()
-                logger.debug(
-                    "Lock acquired", extra={"filepath": str(filepath), "lock_file": str(lock_file)}
-                )
+                logger.debug("Lock acquired", extra={"filepath": str(filepath), "lock_file": str(lock_file)})
                 break
 
             except BlockingIOError as e:
@@ -438,9 +432,7 @@ def file_lock(filepath: Path, timeout: float = 5.0, stale_threshold: float = 300
                             "lock_age": lock_age,
                         },
                     )
-                    raise TimeoutError(
-                        f"Could not acquire lock on {filepath} after {timeout}s"
-                    ) from e
+                    raise TimeoutError(f"Could not acquire lock on {filepath} after {timeout}s") from e
 
                 time.sleep(0.01)
 
@@ -772,9 +764,7 @@ class FailureTracker:
         sessions_dir = TRACKER_BASE / "sessions"
         archive_dir = TRACKER_BASE / "archive"
 
-        logger.info(
-            "Starting session cleanup", extra={"days": days, "sessions_dir": str(sessions_dir)}
-        )
+        logger.info("Starting session cleanup", extra={"days": days, "sessions_dir": str(sessions_dir)})
 
         if not sessions_dir.exists():
             logger.debug("Sessions directory does not exist, nothing to cleanup")

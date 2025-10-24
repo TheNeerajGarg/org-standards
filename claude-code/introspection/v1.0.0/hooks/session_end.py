@@ -37,9 +37,7 @@ def main():
 
         tracker = FailureTracker()
 
-        logger.debug(
-            "Checking for pending alerts", extra={"session_id": tracker.session.session_id}
-        )
+        logger.debug("Checking for pending alerts", extra={"session_id": tracker.session.session_id})
         # Check for pending alerts
         alerts = tracker.get_pending_alerts()
 
