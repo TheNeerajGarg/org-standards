@@ -1,0 +1,35 @@
+# Example: Repository-Specific Quality Gate Overrides
+#
+# Copy this file to quality-gates.local.yaml in your repo root (NOT in org-standards/)
+# and customize as needed. This file is NOT committed to git (.gitignore'd).
+#
+# Use cases:
+# - Lower threshold for specific code types (CLI wrappers, data pipelines)
+# - Disable optional gates (mypy for JavaScript projects)
+# - Add repo-specific gates (security scanning for production services)
+
+# Example 1: Lower coverage threshold for this repo
+gates:
+  coverage:
+    threshold: 60  # Override org-wide 80%
+
+# Example 2: Disable type checking (for Python 2 projects or gradual typing)
+# gates:
+#   type_checking:
+#     enabled: false
+
+# Example 3: Add repo-specific omit patterns
+# gates:
+#   coverage:
+#     omit_patterns:
+#       - "playground/*"
+#       - ".ai-sessions/*"
+#       - "*/tests/*"
+#       - "*/__pycache__/*"
+#       - "migrations/*"      # Add repo-specific pattern
+#       - "legacy_code/*"     # Add repo-specific pattern
+
+# Example 4: Increase timeout for slow test suites
+# gates:
+#   testing:
+#     timeout_seconds: 600  # 10 minutes (override 5 minutes)

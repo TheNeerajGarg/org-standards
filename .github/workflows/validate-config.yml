@@ -1,0 +1,143 @@
+name: Validate Quality Gates Configuration
+
+on:
+  pull_request:
+    paths:
+      - 'config/quality-gates.yaml'
+      - 'config/quality-gates.schema.json'
+      - 'scripts/validate-config.py'
+      - 'python/quality_gates.py'
+  push:
+    branches:
+      - main
+    paths:
+      - 'config/quality-gates.yaml'
+      - 'config/quality-gates.schema.json'
+      - 'scripts/validate-config.py'
+      - 'python/quality_gates.py'
+
+jobs:
+  validate:
+    name: Validate Configuration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml jsonschema
+
+      - name: Validate quality-gates.yaml
+        run: |
+          echo "🔍 Validating quality-gates.yaml..."
+          python scripts/validate-config.py
+
+      - name: Test configuration loading
+        run: |
+          echo "🔍 Testing configuration loader..."
+          cd python
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          from quality_gates import load_config
+          config = load_config(base_config='../config/quality-gates.yaml')
+          print(f'✅ Successfully loaded config version {config.version}')
+          print(f'✅ Found {len(config.gates)} gates')
+          print(f'✅ Execution order: {config.execution_order}')
+          "
+
+      - name: Validate schema completeness
+        run: |
+          echo "🔍 Checking all gates in execution_order are defined..."
+          python -c "
+          import yaml
+          import json
+
+          with open('config/quality-gates.yaml') as f:
+              config = yaml.safe_load(f)
+
+          gates = set(config['gates'].keys())
+          order = set(config['execution_order'])
+
+          missing = order - gates
+          if missing:
+              print(f'❌ Gates in execution_order not defined: {missing}')
+              exit(1)
+
+          extra = gates - order
+          if extra:
+              print(f'⚠️  Warning: Gates defined but not in execution_order: {extra}')
+
+          print('✅ All gates in execution_order are properly defined')
+          "
+
+      - name: Validate no circular dependencies
+        run: |
+          echo "🔍 Checking for circular dependencies..."
+          python -c "
+          import yaml
+
+          with open('config/quality-gates.yaml') as f:
+              config = yaml.safe_load(f)
+
+          def has_circular_dep(gate_name, visited, path):
+              if gate_name in path:
+                  print(f'❌ Circular dependency detected: {\" -> \".join(path + [gate_name])}')
+                  return True
+              if gate_name in visited:
+                  return False
+
+              visited.add(gate_name)
+              path = path + [gate_name]
+
+              gate = config['gates'].get(gate_name, {})
+              for dep in gate.get('depends_on', []):
+                  if has_circular_dep(dep, visited, path):
+                      return True
+
+              return False
+
+          visited = set()
+          for gate_name in config['gates'].keys():
+              if has_circular_dep(gate_name, visited, []):
+                  exit(1)
+
+          print('✅ No circular dependencies found')
+          "
+
+      - name: Validate required fields present
+        run: |
+          echo "🔍 Checking all gates have required fields..."
+          python -c "
+          import yaml
+
+          with open('config/quality-gates.yaml') as f:
+              config = yaml.safe_load(f)
+
+          required_fields = ['enabled', 'tool', 'description', 'required']
+
+          for gate_name, gate_config in config['gates'].items():
+              missing = [f for f in required_fields if f not in gate_config]
+              if missing:
+                  print(f'❌ Gate \"{gate_name}\" missing required fields: {missing}')
+                  exit(1)
+
+          print(f'✅ All {len(config[\"gates\"])} gates have required fields')
+          "
+
+      - name: Summary
+        if: success()
+        run: |
+          echo ""
+          echo "═══════════════════════════════════════════════"
+          echo "✅ All configuration validation checks passed"
+          echo "═══════════════════════════════════════════════"
+          echo ""

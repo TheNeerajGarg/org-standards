@@ -1,0 +1,84 @@
+# Quality Gate Configuration
+# Version: 1.0.0 (2025-10-23)
+# Source: https://github.com/TheNeerajGarg/org-standards
+#
+# Changes propagate to all repos via submodule update.
+
+version: "1.0.0"  # Semantic versioning
+
+# Quality Gates
+gates:
+  # Testing: All tests must pass
+  testing:
+    enabled: true
+    tool: pytest
+    command: "pytest --tb=short -q"
+    description: "Run full test suite"
+    required: true
+    fail_message: |
+      Tests are failing. Fix options:
+      1. Fix the failing tests
+      2. Keep changes local until fixed
+    timeout_seconds: 300
+
+  # Coverage: New code must meet threshold
+  coverage:
+    enabled: true
+    tool: diff-cover
+    threshold: 80  # Percentage
+    command: "diff-cover coverage.xml --compare-branch=origin/main --fail-under={threshold}"
+    description: "Differential coverage on new/modified lines"
+    required: true
+    depends_on: [testing]  # Needs coverage.xml from tests
+    omit_patterns:
+      - "playground/*"
+      - ".ai-sessions/*"
+      - "*/tests/*"
+      - "*/__pycache__/*"
+    fail_message: |
+      Coverage below {threshold}%. Fix options:
+      1. Add tests to reach {threshold}% coverage
+      2. See uncovered lines: diff-cover coverage.xml --compare-branch=origin/main
+    timeout_seconds: 60
+
+  # Type Checking: Type hints validated
+  type_checking:
+    enabled: true
+    tool: mypy
+    command: "mypy ."
+    description: "Static type checking"
+    required: false  # Optional - skip if not installed
+    fail_message: |
+      Type checking failed. Fix: Add type hints or type: ignore comments
+    timeout_seconds: 120
+
+  # Linting: Code style enforced
+  linting:
+    enabled: true
+    tool: ruff
+    commands:
+      format_check: "ruff format --check ."
+      lint_check: "ruff check ."
+    description: "Code formatting and linting"
+    required: true
+    fail_message: |
+      Linting failed. Auto-fix: ruff format . && ruff check --fix .
+    timeout_seconds: 60
+
+# Execution Order
+execution_order:
+  - testing        # Must run first (generates coverage.xml)
+  - coverage       # Depends on test results
+  - type_checking  # Independent
+  - linting        # Independent
+
+# Emergency Bypass
+emergency_bypass:
+  enabled: true
+  env_var: "EMERGENCY_PUSH"
+  log_dir: ".emergency-bypasses"
+  log_format: "json"
+  reason_env_var: "EMERGENCY_REASON"
+
+# Repository-Specific Overrides
+override_file: "quality-gates.local.yaml"

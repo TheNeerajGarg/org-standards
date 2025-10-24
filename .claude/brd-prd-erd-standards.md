@@ -65,11 +65,16 @@
 
 **MANDATORY Structure**:
 1. **Abstract** (10 lines max) - Problem, impact, success criteria
-2. **Problem Validation** - Problem-solution fit BEFORE any design (NEW - see below)
-3. **Problem Statement** - What's broken? Evidence?
-4. **Business Impact** - Cost of not solving? Revenue opportunity?
-5. **Success Criteria** - How do we know it worked? (metrics only)
-6. **Out of Scope** - What we're NOT doing
+2. **Customer & Problem** - Who is customer, current workarounds, success quote (NEW - see template)
+3. **Problem Validation** - Problem-solution fit BEFORE any design (CRITICAL - see below)
+4. **Business Problem** - What's broken? Evidence?
+5. **Business Impact** - Cost of not solving? Revenue opportunity?
+6. **Success Criteria** - How do we know it worked? (metrics only, business outcomes)
+7. **Business Context** - Stakeholders, constraints
+8. **Out of Scope** - What we're NOT doing
+9. **Assumptions** - Explicit assumptions with confidence scores (minimum 5-10)
+
+**Target Line Count**: 120-150 lines (complex problems may need up to 180, but >200 is a red flag)
 
 **Problem Validation (CRITICAL - Must Come FIRST)**:
 
@@ -117,17 +122,324 @@
 - Stakeholder needs
 
 **MUST NOT be in BRD** ❌:
-- **NO SOLUTION** - Not even high-level
+- **NO SOLUTION** - Not even high-level ("we'll build X" is solution)
+- **NO "DESIRED WORKFLOW"** - Specifies how solution should work (move to PRD user stories)
 - **NO ARCHITECTURE** - Zero technical details
 - **NO IMPLEMENTATION** - No task breakdowns
 - **NO TEST STRATEGY**
 - **NO API DESIGN**
 - **NO CODE**
+- **NO SCENARIOS** - "Current vs Desired Workflow" walkthroughs → PRD user stories
+- **NO TECHNICAL ROOT CAUSES in detail** - Business impact only, tech details in PRD/ERD
+- **NO FUNCTIONAL REQUIREMENTS** - "System must do X" → PRD
 - API cost calculations (token-level math) → **PRD** (high-level only in BRD)
 - Code examples, file paths, schemas → **ERD**
 - Validation task plans → **PRD**
 - Phase task lists with hour estimates → **PRD/ERD**
 - Retry logic, timeouts, config values → **ERD**
+
+**Common BRD Bloat Patterns** (DELETE these, move to PRD):
+- ❌ Step-by-step workflow walkthroughs ("First developer does X, then Y...")
+- ❌ "Desired Workflow" or "Ideal State" sections (solution thinking)
+- ❌ Detailed baseline metrics tables (keep high-level in BRD, details in PRD)
+- ❌ Root cause analysis with technical details (keep "what hurts", move "why technically" to PRD)
+- ❌ Solution hints in success criteria ("hash stability", "incremental validation" are solutions)
+- ❌ "Questions for Decision" planning sections (move to PRD)
+
+---
+
+### BRD Template (Copy This)
+
+```markdown
+# BRD: [Problem Name]
+
+**Date**: YYYY-MM-DD
+**Author**: [Name]
+**Status**: Draft | Under Review | Approved
+**Type**: Business Requirements Document
+**Related**: [GitHub Issue #XX]
+**PRD**: (To be created)
+
+---
+
+## Abstract
+
+**Problem**: [1-2 sentences: What's broken? What behavior are we seeing?]
+
+**Business Impact**: [1-2 sentences: Cost/revenue impact, velocity tax, morale issues]
+
+**Success Criteria**: [1 sentence: Primary metrics baseline → target]
+
+**Scope**: [1 sentence: Which projects/products affected]
+
+---
+
+## Customer & Problem
+
+### Who is the Customer?
+
+**INSTRUCTIONS**:
+- If multiple customers: Use "Customer 1", "Customer 2" format below
+- If single customer: Use "Primary" / "Secondary" format
+- If zero customers (internal improvement): Use "Internal Stakeholder" and skip to "What's Wrong with Current Approach"
+
+**Customer 1: [Customer Type/Role]**
+- **Role**: [Who is this person/system? What do they do?]
+- **Context**: [What environment/constraints do they operate in?]
+- **Pain**: [What specific pain do they experience from this problem?]
+
+**Customer 2: [Customer Type/Role]** (if applicable)
+- **Role**: [Same format as Customer 1]
+- **Context**: [Same format]
+- **Pain**: [Same format]
+
+[Add Customer 3, 4, etc. if needed. If >4 customers with different pains, scope is too broad]
+
+**Common Profile Across Customers** (if multiple customers):
+- [Key characteristic shared by all: constraints, context, motivations]
+- [Another shared characteristic]
+
+**OR (if single customer)**:
+
+**Primary**: [Who is directly experiencing this problem? Be specific about role, context]
+**Secondary**: [Who else is affected indirectly?]
+
+**Customer Profile**:
+- [Key characteristic 1: constraints, context, motivations]
+- [Key characteristic 2]
+- [Key characteristic 3]
+
+**OR (if internal improvement only, no external customers)**:
+
+**Internal Stakeholder**: [Team/role affected]
+**Context**: [Why this matters internally: efficiency, maintenance, quality]
+**Note**: This is an internal improvement - no external customer impact. Skip "Problem from Customer Perspective" and "Success Quote" sections.
+
+### Problem from Customer Perspective
+
+**INSTRUCTIONS**: If zero customers (internal improvement), skip this subsection.
+
+**Customer says**: "[Direct quote or paraphrase of customer frustration in their words]"
+
+**What they're trying to do**: [What outcome are they trying to achieve?]
+
+**If multiple customers**: List each customer's perspective:
+- **Customer 1 says**: "[Quote]"
+- **Customer 2 says**: "[Quote]"
+- **Common goal**: [What all customers are trying to achieve]
+
+### How They're Doing It Today
+
+**Current Workaround #1**: [How they currently solve/avoid the problem]
+- Frequency: [How often? X% of time, Y times per day]
+- Why they do it: [Root motivation for this workaround]
+- Problems: [What's wrong with this workaround? Cost/impact?]
+
+**Current Workaround #2**: [Second workaround if applicable]
+- Frequency: [How often?]
+- Why they do it: [Motivation]
+- Problems: [What's wrong?]
+
+[Add 2-4 workarounds total. If customers have >4 workarounds, problem is poorly scoped]
+
+### What's Wrong with Current Approach
+
+**From Customer Perspective**:
+1. **[Pain Point 1]**: [Why this hurts from customer view, not technical view]
+2. **[Pain Point 2]**: [Same format]
+3. **[Pain Point 3]**: [Same format]
+4. **[Pain Point 4]**: [Same format]
+
+**Business Impact**: [High-level cost/revenue/morale impact]
+
+### What Customer Will Say When Problem is Solved
+
+**INSTRUCTIONS**:
+- If zero customers (internal improvement): Skip this subsection, use metrics in Success Criteria section instead
+- If multiple customers: Provide success quote for each OR a unified quote
+
+**Success Quote** (target - what customer will say after solution):
+> "[Verbatim quote from customer describing successful outcome. Make it specific, concrete, emotional. This is your north star.]"
+
+**If multiple customers**:
+- **Customer 1 quote**: "[Their success statement]"
+- **Customer 2 quote**: "[Their success statement]"
+- **OR Unified quote**: "[Combined success statement that represents all customers]"
+
+**Behavior Change**:
+- [Specific behavior that will change: metric before → after]
+- [Another behavior change with metric]
+- [Sentiment change: what they'll say/feel]
+
+---
+
+## Problem Validation
+
+### Pain Point (User's Exact Words)
+
+"[User quote describing frustration/blocker]"
+
+### Technical Root Cause vs Actual Pain
+
+**Technical Root Causes**:
+- [Technical symptom 1]
+- [Technical symptom 2]
+
+**Actual Pain Points** (human factors):
+- **Attribution**: [Who/what is blamed? "Not my problem" mentality?]
+- **Collective punishment**: [Forced to fix others' issues?]
+- **Lack of control**: [Can't predict outcomes?]
+- **Time pressure**: [Deadlines causing shortcuts?]
+
+**Critical Distinction**: Solving technical root cause may NOT solve actual pain if [reason].
+
+### Human Factors Analysis
+
+**Incentives**: [What motivates current behavior? Speed vs quality?]
+**Frustration**: [What causes workarounds? Unpredictability? Forced context switching?]
+**Time Pressure**: [Are shortcuts due to limited time/resources?]
+**Attribution**: [Can users tell "my fault" vs "pre-existing"?]
+
+---
+
+## Business Problem
+
+### Problem 1: [Name] ([Impact Metric])
+
+[2-3 sentences describing pain, frequency, business impact. NO workflow walkthroughs. Focus on "what hurts" not "why technically".]
+
+**Impact**: [Quantified: X% slower, $Y lost, Z incidents per month]
+
+### Problem 2: [Name] ([Impact Metric])
+
+[Same format as Problem 1]
+
+[Add 3-5 problems total. If >5 problems, scope is too large - split into multiple BRDs]
+
+---
+
+## Business Impact
+
+**[Impact Category 1]**: [1-2 sentences with metrics]
+
+**[Impact Category 2]**: [1-2 sentences with metrics]
+
+**Strategic Risk**: [How does this affect product/company strategy?]
+
+**Revenue Impact**: [If applicable: delays, churn, opportunity cost]
+
+---
+
+## Success Criteria
+
+**Primary Metrics** (baseline → target):
+- [Metric 1]: [X] → [Y]
+- [Metric 2]: [X] → [Y]
+- [Metric 3]: [X] → [Y]
+- [Metric 4]: [X] → [Y]
+- [Metric 5]: [X] → [Y]
+
+**Secondary Metrics**:
+- [Qualitative or supporting metrics]
+
+(Detailed baseline data and methodology in PRD Section 2: Current State)
+
+---
+
+## Business Context
+
+### Why This Matters for [Product/Team]
+
+**[Product] Mission**: [1 sentence]
+**Impact on Product**: [2-3 sentences tying problem to product success/failure]
+
+### Stakeholders
+
+**Primary**: [Who is directly affected? Their needs?]
+**Secondary**: [Who is indirectly affected?]
+
+**Priority**: [If conflict arises between stakeholder needs, who wins?]
+
+---
+
+## Constraints
+
+**Must Preserve**:
+- [What we can't compromise on]
+- [Core values/quality bars]
+
+**Cannot Change**:
+- [External constraints: processes, systems, regulations]
+
+**Must Avoid**:
+- [What would make problem worse]
+
+---
+
+## Out of Scope
+
+**Not Solving** (separate problems, out of scope for this effort):
+- [Problem/feature 1] - [Why out of scope]
+- [Problem/feature 2] - [Why out of scope]
+
+---
+
+## Assumptions
+
+**A1**: [Assumption statement]
+**Confidence**: [0-100]% ([reasoning for confidence level])
+**Validation Needed**: [How to verify this assumption]
+**Risk if Wrong**: [What happens if assumption is false]
+
+**A2**: [Same format for 5-10 assumptions total]
+
+[List minimum 5-10 explicit assumptions. If you have <5, you're missing hidden assumptions.]
+
+---
+
+## Questions for Decision
+
+1. **[Question 1]**: [What needs to be decided? What are the options?]
+2. **[Question 2]**: [Same format]
+3. **[Question 3]**: [Same format]
+
+[Max 3-5 questions. If >5 questions, problem not well-defined yet.]
+
+---
+
+## Related Context
+
+- **Issue**: [GitHub/Jira link]
+- **Baseline Data**: [Link to detailed analysis]
+- **Detailed Content**: [Link to PRD parking lot if applicable]
+- **Review Feedback**: [Link to review consolidation]
+
+---
+
+## Next Steps
+
+1. ✅ **[Completed step]** (YYYY-MM-DD): [What was done]
+2. **[Next step]**: [What needs to happen]
+3. **[Future step]**: [What comes after]
+
+---
+
+**BRD Complete**
+**Status**: [Draft | Under Review | Approved]
+**Line Count**: [X lines] ([X]× target of 100, [acceptable | needs compression])
+**Next**: [What happens next: user review, PRD, etc.]
+```
+
+**Template Notes**:
+- Target 120-150 lines total (with Customer section)
+- Abstract should be ~10 lines (10% of document)
+- Customer & Problem section should be ~40 lines (critical for customer empathy)
+- Each problem should be 3-5 lines (compress, no workflows)
+- Assumptions section mandatory (5-10 assumptions minimum)
+- NO solution content anywhere (test: could you swap solutions and BRD still works?)
+- Success Quote is your north star - everything should lead to making that quote real
+
+---
 
 ### PRD: Product Requirements Document (<6 pages, ~300 lines)
 
