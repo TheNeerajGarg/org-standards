@@ -28,7 +28,13 @@ def test_repo(tmp_path):
 
     # Create dummy bare git repo for origin (needed for pre-push hook to trigger)
     dummy_remote = tmp_path / "dummy-remote.git"
-    subprocess.run(["git", "init", "--bare"], cwd=tmp_path, env={**os.environ, "GIT_DIR": str(dummy_remote)}, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "init", "--bare"],
+        cwd=tmp_path,
+        env={**os.environ, "GIT_DIR": str(dummy_remote)},
+        check=True,
+        capture_output=True,
+    )
 
     # Add origin remote
     subprocess.run(
