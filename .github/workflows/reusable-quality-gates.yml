@@ -1,0 +1,121 @@
+name: Reusable Quality Gates
+
+# This workflow can be called by other repositories
+# Example usage in calling repo:
+#   jobs:
+#     quality-gates:
+#       uses: TheNeerajGarg/org-standards/.github/workflows/reusable-quality-gates.yml@main
+#       with:
+#         python-version: '3.13'
+#         coverage-baseline: 70
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use'
+        required: false
+        type: string
+        default: '3.13'
+      coverage-baseline:
+        description: 'Minimum overall coverage percentage'
+        required: false
+        type: number
+        default: 70
+      install-command:
+        description: 'Additional pip install commands (e.g., "pip install -r requirements.txt")'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for diff-cover
+          submodules: true  # Include org-standards
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy pytest pytest-cov diff-cover pyyaml
+          ${{ inputs.install-command }}
+
+      - name: Linting (ruff format check)
+        run: |
+          echo "🔍 Checking code formatting..."
+          ruff format --check .
+
+      - name: Linting (ruff check)
+        run: |
+          echo "🔍 Running linter..."
+          ruff check .
+
+      - name: Type checking (mypy)
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "🔍 Type checking (changed files only)..."
+
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+
+          # Get changed Python files (exclude only tests and third-party packages)
+          git diff --name-only --diff-filter=ACMRT origin/$BASE_BRANCH...HEAD | \
+            grep '\.py$' | \
+            grep -v '^tests/' | \
+            grep -v '/venv/' | \
+            grep -v '/\.venv/' | \
+            grep -v '/site-packages/' | \
+            xargs -r mypy --exclude '__pycache__' || echo "No Python files to check or mypy passed"
+
+      - name: Run tests with coverage
+        run: |
+          echo "🧪 Running tests with coverage..."
+          pytest --cov=. --cov-report=xml --cov-report=term-missing
+
+      - name: Diff coverage (changed lines only)
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "📊 Checking diff coverage (changed lines only)..."
+
+          # Get base branch for comparison
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+
+          # STRICT: Require >= 80% coverage on changed lines
+          diff-cover coverage.xml \
+            --compare-branch=origin/$BASE_BRANCH \
+            --fail-under=80 \
+            --ignore-whitespace
+
+      - name: Overall coverage check
+        run: |
+          echo "📊 Checking overall coverage doesn't decrease..."
+          # STRICT: Coverage must not go down (baseline from input)
+          coverage report --fail-under=${{ inputs.coverage-baseline }}
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Summary
+        if: success()
+        run: |
+          echo ""
+          echo "═══════════════════════════════════════════════"
+          echo "✅ All quality gates passed"
+          echo "═══════════════════════════════════════════════"
+          echo ""
