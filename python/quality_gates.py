@@ -79,8 +79,8 @@ class ExecutionResults:
 
 
 def load_config(
-    base_config: Path | None = None,
-    override_config: Path | None = None,
+    base_config: Path | str | None = None,
+    override_config: Path | str | None = None,
 ) -> QualityGatesConfig:
     """Load quality gate configuration with optional overrides.
 
@@ -97,6 +97,8 @@ def load_config(
     """
     if base_config is None:
         base_config = Path("org-standards/config/quality-gates.yaml")
+    elif isinstance(base_config, str):
+        base_config = Path(base_config)
 
     if not base_config.exists():
         raise FileNotFoundError(f"Config not found: {base_config}")
@@ -109,6 +111,8 @@ def load_config(
     if override_config is None:
         override_file = base.get("override_file", "quality-gates.local.yaml")
         override_config = Path(override_file)
+    elif isinstance(override_config, str):
+        override_config = Path(override_config)
 
     overrides: dict[str, Any] = {}
     if override_config.exists():
