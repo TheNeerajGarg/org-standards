@@ -22,7 +22,6 @@ jobs:
         # List of all repos that use org-standards as a submodule
         repo:
           - StyleGuru/syra
-          - StyleGuru/fashion-extract
           # Add more repos here as they adopt org-standards
 
       # Don't cancel other repo updates if one fails

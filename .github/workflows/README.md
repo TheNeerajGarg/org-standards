@@ -14,7 +14,7 @@ This directory contains GitHub Actions workflows for org-standards automation.
 
 **What it does**:
 1. Detects when org-standards `main` branch is updated
-2. For each dependent repo (syra, fashion-extract, etc.):
+2. For each dependent repo (currently: syra):
    - Checks out the repo
    - Updates org-standards submodule to latest main
    - Creates a PR if changes exist
@@ -27,14 +27,13 @@ strategy:
   matrix:
     repo:
       - StyleGuru/syra
-      - StyleGuru/fashion-extract
       - StyleGuru/your-new-repo  # Add here
 ```
 
 **Manual trigger**:
 ```bash
 # Update specific repos only
-gh workflow run propagate-to-repos.yml -f repos="StyleGuru/syra,StyleGuru/fashion-extract"
+gh workflow run propagate-to-repos.yml -f repos="StyleGuru/syra"
 
 # Update all repos (default)
 gh workflow run propagate-to-repos.yml
@@ -120,7 +119,6 @@ gh run view <run-id>
 ```bash
 # In each dependent repo
 cd syra && git submodule status
-cd fashion-extract && git submodule status
 ```
 
 ---

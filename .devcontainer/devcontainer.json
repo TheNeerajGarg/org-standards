@@ -9,7 +9,7 @@
 
   // Mount config directories
   "mounts": [
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/fashion-extract,target=/root/.config/fashion-extract,type=bind,readonly",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/StyleGuru,target=/root/.config/StyleGuru,type=bind,readonly",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/syra,target=/root/.config/syra,type=bind,readonly"
   ],
 
@@ -85,8 +85,8 @@
   "remoteUser": "vscode",
 
   // Install dependencies for all projects after container creation
-  "postCreateCommand": "echo '📦 Installing dependencies...' && (cd /workspace/fashion-extract && pip install -r requirements.txt --break-system-packages && pip install -e .[test,dev] --break-system-packages) && (cd /workspace/syra && pip install -e .[test,dev] --break-system-packages) && echo '✅ All dependencies installed'",
+  "postCreateCommand": "echo '📦 Installing dependencies...' && (cd /workspace/StyleGuru && pip install -r requirements.txt --break-system-packages && pip install -e .[test,dev] --break-system-packages) && (cd /workspace/syra && pip install -e .[test,dev] --break-system-packages) && echo '✅ All dependencies installed'",
 
   // Post-start command - configure git safe directories for all repos
-  "postStartCommand": "git config --global --add safe.directory /workspace/fashion-extract && git config --global --add safe.directory /workspace/syra && git config --global --add safe.directory /workspace/syra-playground && git config --global --add safe.directory /workspace/org-standards && echo '✅ NeerajDev Unified Workspace ready - All repos accessible!'"
+  "postStartCommand": "git config --global --add safe.directory /workspace/StyleGuru && git config --global --add safe.directory /workspace/syra && git config --global --add safe.directory /workspace/syra-playground && git config --global --add safe.directory /workspace/org-standards && echo '✅ NeerajDev Unified Workspace ready - All repos accessible!'"
 }
