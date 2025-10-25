@@ -1,0 +1,182 @@
+name: Propagate org-standards Updates
+
+# Triggers when org-standards main branch is updated
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: 'Comma-separated list of repos to update (leave empty for all)'
+        required: false
+        default: ''
+
+jobs:
+  propagate:
+    name: Update dependent repos
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        # List of all repos that use org-standards as a submodule
+        repo:
+          - StyleGuru/syra
+          - StyleGuru/fashion-extract
+          # Add more repos here as they adopt org-standards
+
+      # Don't cancel other repo updates if one fails
+      fail-fast: false
+
+    steps:
+      - name: Check if repo should be updated
+        id: check_repo
+        run: |
+          REPOS_INPUT="${{ github.event.inputs.repos }}"
+          CURRENT_REPO="${{ matrix.repo }}"
+
+          # If manual trigger with specific repos, check if this repo is in the list
+          if [ -n "$REPOS_INPUT" ]; then
+            if echo "$REPOS_INPUT" | tr ',' '\n' | grep -qx "$CURRENT_REPO"; then
+              echo "should_update=true" >> $GITHUB_OUTPUT
+            else
+              echo "should_update=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            # Auto trigger - update all repos
+            echo "should_update=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout dependent repo
+        if: steps.check_repo.outputs.should_update == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repo }}
+          token: ${{ secrets.BOT_GITHUB_TOKEN }}
+          submodules: recursive
+
+      - name: Update org-standards submodule
+        if: steps.check_repo.outputs.should_update == 'true'
+        id: update_submodule
+        run: |
+          git config user.name "org-standards-bot"
+          git config user.email "noreply@example.com"
+
+          # Update submodule to latest main
+          cd org-standards
+          git fetch origin main
+          git checkout origin/main
+          cd ..
+
+          # Check if there are changes
+          if git diff --quiet org-standards; then
+            echo "No updates needed for ${{ matrix.repo }}"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+
+            # Get the commit message from org-standards
+            ORG_STANDARDS_COMMIT=$(cd org-standards && git rev-parse --short HEAD)
+            ORG_STANDARDS_MSG=$(cd org-standards && git log -1 --pretty=%B)
+
+            echo "commit_hash=$ORG_STANDARDS_COMMIT" >> $GITHUB_OUTPUT
+            echo "commit_msg<<EOF" >> $GITHUB_OUTPUT
+            echo "$ORG_STANDARDS_MSG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create PR
+        if: steps.check_repo.outputs.should_update == 'true' && steps.update_submodule.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
+        run: |
+          COMMIT_HASH="${{ steps.update_submodule.outputs.commit_hash }}"
+          BRANCH_NAME="chore/update-org-standards-${COMMIT_HASH}"
+
+          # Create and checkout new branch
+          git checkout -b "$BRANCH_NAME"
+
+          # Stage and commit submodule update
+          git add org-standards
+
+          cat > commit_msg.txt <<EOF
+          chore: update org-standards to ${COMMIT_HASH}
+
+          org-standards changes:
+          ${{ steps.update_submodule.outputs.commit_msg }}
+
+          This PR was automatically created by org-standards propagation workflow.
+
+          🤖 Generated with org-standards propagation bot
+          EOF
+
+          git commit -F commit_msg.txt
+
+          # Push branch
+          git push origin "$BRANCH_NAME"
+
+          # Create PR using gh CLI
+          cat > pr_body.txt <<EOF
+          ## org-standards Update
+
+          This PR updates the org-standards submodule to the latest version.
+
+          **org-standards commit**: [$COMMIT_HASH](https://github.com/TheNeerajGarg/org-standards/commit/$COMMIT_HASH)
+
+          **Changes**:
+          \`\`\`
+          ${{ steps.update_submodule.outputs.commit_msg }}
+          \`\`\`
+
+          ## What to Review
+
+          1. Check if any breaking changes in org-standards affect this repo
+          2. Run local tests: \`pytest\`
+          3. Check pre-push hook still works: \`.git/hooks/pre-push\`
+          4. Review quality gate configuration changes (if any)
+
+          ## How to Test
+
+          \`\`\`bash
+          # Pull this branch
+          git checkout $BRANCH_NAME
+          git submodule update --init --recursive
+
+          # Test pre-push hook
+          .git/hooks/pre-push
+
+          # Run tests
+          pytest
+          \`\`\`
+
+          ## Merge Checklist
+
+          - [ ] CI/CD passes
+          - [ ] Pre-push hook tested locally
+          - [ ] No breaking changes for this repo
+          - [ ] Quality gates still appropriate
+
+          ---
+
+          🤖 **Automated PR** - Created by [org-standards propagation workflow](https://github.com/TheNeerajGarg/org-standards/blob/main/.github/workflows/propagate-to-repos.yml)
+
+          To disable auto-updates for this repo, remove it from the workflow matrix.
+          EOF
+
+          gh pr create \
+            --title "chore: update org-standards to ${COMMIT_HASH}" \
+            --body-file pr_body.txt \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --label "dependencies,automated"
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ "${{ steps.check_repo.outputs.should_update }}" != "true" ]; then
+            echo "⏭️ Skipped ${{ matrix.repo }} (not in manual trigger list)"
+          elif [ "${{ steps.update_submodule.outputs.has_changes }}" != "true" ]; then
+            echo "✅ ${{ matrix.repo }} is already up to date"
+          else
+            echo "📬 Created PR for ${{ matrix.repo }}"
+          fi
