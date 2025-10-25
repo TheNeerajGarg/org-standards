@@ -47,7 +47,7 @@ gates:
     tool: mypy
     command: "mypy ."
     description: "Static type checking"
-    required: false  # Optional - skip if not installed
+    required: true  # Required - type hints mandatory for new code
     fail_message: |
       Type checking failed. Fix: Add type hints or type: ignore comments
     timeout_seconds: 120
