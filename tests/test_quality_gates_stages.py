@@ -2,21 +2,19 @@
 """Tests for stage-aware quality gates."""
 
 import os
-import pytest
-from dataclasses import field
-
 import sys
 from pathlib import Path
+
+import pytest
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "python"))
 
 from quality_gates import (
-    load_config,
-    _apply_stage_relaxations,
-    _detect_stage,
     GateConfig,
     QualityGatesConfig,
+    _apply_stage_relaxations,
+    _detect_stage,
 )
 
 
