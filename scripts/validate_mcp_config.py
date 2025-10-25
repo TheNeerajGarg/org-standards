@@ -17,7 +17,7 @@ Exit codes:
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 
 class MCPConfigValidator:
@@ -34,8 +34,8 @@ class MCPConfigValidator:
             config_path: Path to .mcp.json file
         """
         self.config_path = config_path
-        self.errors: List[str] = []
-        self.warnings: List[str] = []
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
 
     def validate(self) -> bool:
         """
@@ -67,7 +67,7 @@ class MCPConfigValidator:
 
         return len(self.errors) == 0
 
-    def _validate_structure(self, config: Dict[str, Any]) -> None:
+    def _validate_structure(self, config: dict[str, Any]) -> None:
         """Validate top-level structure."""
         if "mcpServers" not in config:
             self.errors.append("Missing required field: 'mcpServers'")
@@ -80,7 +80,7 @@ class MCPConfigValidator:
         if len(config["mcpServers"]) == 0:
             self.warnings.append("No MCP servers defined")
 
-    def _validate_server(self, name: str, config: Dict[str, Any]) -> None:
+    def _validate_server(self, name: str, config: dict[str, Any]) -> None:
         """
         Validate individual server configuration.
 
@@ -112,7 +112,7 @@ class MCPConfigValidator:
             if not isinstance(config["env"], dict):
                 self.errors.append(f"Server '{name}': 'env' must be an object")
 
-    def _validate_args(self, server_name: str, args: List[str]) -> None:
+    def _validate_args(self, server_name: str, args: list[str]) -> None:
         """
         Validate server arguments.
 
@@ -173,7 +173,7 @@ class MCPConfigValidator:
             print(f"\n✅ Validation PASSED (with warnings) for {self.config_path}")
 
 
-def validate_all_repos() -> Tuple[int, int]:
+def validate_all_repos() -> tuple[int, int]:
     """
     Validate MCP configs in all known repos.
 
