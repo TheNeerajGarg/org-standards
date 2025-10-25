@@ -429,6 +429,8 @@ def _apply_stage_relaxations(
                     setattr(gate, key, value)
                 else:
                     # Log warning for unknown keys
-                    print(f"⚠️  Unknown relaxation key '{key}' for gate '{gate_name}' stage '{stage}'")
+                    print(
+                        f"⚠️  Unknown relaxation key '{key}' for gate '{gate_name}' stage '{stage}'"
+                    )
 
     return config
