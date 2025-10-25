@@ -22,6 +22,11 @@ on:
         required: false
         type: number
         default: 70
+      coverage-scope:
+        description: 'Coverage scope (e.g., "src" or "."). Defaults to "." (all code)'
+        required: false
+        type: string
+        default: '.'
       install-command:
         description: 'Additional pip install commands (e.g., "pip install -r requirements.txt")'
         required: false
@@ -80,7 +85,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           echo "🧪 Running tests with coverage..."
-          pytest --cov=. --cov-report=xml --cov-report=term-missing
+          pytest --cov=${{ inputs.coverage-scope }} --cov-report=xml --cov-report=term-missing
 
       - name: Diff coverage (changed lines only)
         if: github.event_name == 'pull_request'
