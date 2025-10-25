@@ -14,7 +14,7 @@ This directory contains GitHub Actions workflows for org-standards automation.
 
 **What it does**:
 1. Detects when org-standards `main` branch is updated
-2. For each dependent repo (currently: syra):
+2. For each dependent repo (syra, StyleGuru, syra-playground):
    - Checks out the repo
    - Updates org-standards submodule to latest main
    - Creates a PR if changes exist
