@@ -163,12 +163,17 @@ jobs:
           To disable auto-updates for this repo, remove it from the workflow matrix.
           EOF
 
+          # Create PR (labels are optional - don't fail if they don't exist)
           gh pr create \
             --title "chore: update org-standards to ${COMMIT_HASH}" \
             --body-file pr_body.txt \
             --base main \
-            --head "$BRANCH_NAME" \
-            --label "dependencies,automated"
+            --head "$BRANCH_NAME" || \
+          gh pr create \
+            --title "chore: update org-standards to ${COMMIT_HASH}" \
+            --body-file pr_body.txt \
+            --base main \
+            --head "$BRANCH_NAME"
 
       - name: Summary
         if: always()
