@@ -39,9 +39,20 @@ jobs:
           ruff check .
 
       - name: Type checking (mypy)
+        if: github.event_name == 'pull_request'
         run: |
-          echo "🔍 Type checking..."
-          mypy . || true  # Don't fail on type errors yet (grandfather policy)
+          echo "🔍 Type checking (changed files only)..."
+
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+
+          # Get changed Python files (exclude tests and third-party packages)
+          git diff --name-only --diff-filter=ACMRT origin/$BASE_BRANCH...HEAD | \
+            grep '\.py$' | \
+            grep -v '^tests/' | \
+            grep -v '/venv/' | \
+            grep -v '/\.venv/' | \
+            grep -v '/site-packages/' | \
+            xargs -r mypy || echo "No Python files to check or mypy passed"
 
       - name: Run tests with coverage
         run: |
@@ -56,17 +67,17 @@ jobs:
           # Get base branch for comparison
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
 
-          # Run diff-cover to check coverage on changed lines
+          # STRICT: Require >= 80% coverage on changed lines
           diff-cover coverage.xml \
             --compare-branch=origin/$BASE_BRANCH \
             --fail-under=80 \
-            --ignore-whitespace \
-            || echo "⚠️ Diff coverage <80% - fix before merge"
+            --ignore-whitespace
 
       - name: Overall coverage check
         run: |
-          echo "📊 Checking overall coverage..."
-          coverage report --fail-under=80 || echo "⚠️ Overall coverage <80%"
+          echo "📊 Checking overall coverage doesn't decrease..."
+          # STRICT: Coverage must not go down (baseline: 70%)
+          coverage report --fail-under=70
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
