@@ -82,3 +82,46 @@ emergency_bypass:
 
 # Repository-Specific Overrides
 override_file: "quality-gates.local.yaml"
+
+# =============================================================================
+# Stage Relaxations (OPTIONAL)
+# =============================================================================
+#
+# PHILOSOPHY: Base configuration = HIGHEST STANDARD (push-to-main requirements)
+#             Stage relaxations = Explicit opt-out for earlier stages
+#
+# BENEFIT: New gates are enforced EVERYWHERE by default unless explicitly relaxed
+#
+# EXAMPLE:
+#
+# gates:
+#   coverage:
+#     threshold: 85          # Base = highest standard (push-to-main)
+#     required: true
+#
+#     stage_relaxations:     # Relax for earlier stages
+#       pre-push:
+#         threshold: 70      # Fast local feedback
+#       pr:
+#         threshold: 80      # Moderate CI bar
+#       # push-to-main: No entry = uses base (85%)
+#
+#   type_checking:
+#     enabled: true
+#     required: true
+#
+#     stage_relaxations:
+#       pre-push:
+#         enabled: false     # Skip locally for speed
+#
+# VALID STAGES:
+#   - pre-push: Pre-push hook (local development)
+#   - pr: Pull request CI checks
+#   - push-to-main: Direct push to main branch (uses base config)
+#
+# RELAXABLE FIELDS:
+#   - enabled: true/false (can disable for earlier stages)
+#   - threshold: integer (can lower for earlier stages)
+#   - required: true/false (can make optional for earlier stages)
+#   - timeout_seconds: integer (can shorten for earlier stages)
+#   - command: string (can simplify for earlier stages)

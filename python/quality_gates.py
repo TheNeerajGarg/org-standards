@@ -28,7 +28,11 @@ import yaml
 
 @dataclass
 class GateConfig:
-    """Configuration for a single quality gate."""
+    """Configuration for a single quality gate.
+
+    Base configuration represents the HIGHEST STANDARD (push-to-main requirements).
+    Stage relaxations allow explicit opt-out for earlier stages.
+    """
 
     name: str
     enabled: bool
@@ -42,6 +46,7 @@ class GateConfig:
     omit_patterns: list[str] = field(default_factory=list)
     fail_message: str = ""
     timeout_seconds: int = 300
+    stage_relaxations: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 @dataclass
@@ -132,13 +137,31 @@ def load_config(
 def execute_gates(config: QualityGatesConfig, phase: str = "pre-push") -> ExecutionResults:
     """Execute quality gates in configured order.
 
+    Base configuration = HIGHEST STANDARD (push-to-main requirements).
+    Relaxations applied for pre-push/pr stages for development speed.
+
     Args:
         config: Quality gates configuration
-        phase: Execution phase (for logging/context)
+        phase: Stage name ("pre-push", "pr", "push-to-main")
+               If not provided, auto-detects from environment
 
     Returns:
         Execution results with pass/fail status and details
     """
+    # Detect stage if not explicitly provided
+    stage = phase or _detect_stage()
+
+    # Log stage
+    if stage:
+        print(f"🎯 Stage: {stage}")
+        if stage == "push-to-main":
+            print("   Using highest standard (no relaxations)")
+        else:
+            print(f"   Applying relaxations for '{stage}' stage")
+
+    # Apply stage relaxations
+    config = _apply_stage_relaxations(config, stage)
+
     start_time = time.time()
     results = []
     failures = []
@@ -335,3 +358,77 @@ def _parse_config(config: dict) -> QualityGatesConfig:
         emergency_bypass=config.get("emergency_bypass", {}),
         override_file=config.get("override_file"),
     )
+
+
+# Valid stage names
+VALID_STAGES = {"pre-push", "pr", "push-to-main"}
+
+
+def _detect_stage() -> str | None:
+    """Auto-detect stage from environment.
+
+    Returns:
+        Stage name ("pre-push", "pr", "push-to-main") or None if cannot detect
+    """
+    import os
+
+    # GitHub Actions detection
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        event_name = os.getenv("GITHUB_EVENT_NAME")
+        ref = os.getenv("GITHUB_REF")
+
+        if event_name == "pull_request":
+            return "pr"
+        elif ref in ("refs/heads/main", "refs/heads/master"):
+            return "push-to-main"
+
+    # Cannot detect stage - will use base config (highest standard)
+    return None
+
+
+def _apply_stage_relaxations(
+    config: QualityGatesConfig,
+    stage: str | None,
+) -> QualityGatesConfig:
+    """Apply stage-specific relaxations to gate configurations.
+
+    Base configuration = HIGHEST STANDARD (push-to-main requirements).
+    Relaxations allow explicit opt-out for earlier stages.
+
+    Args:
+        config: Base quality gates configuration (strictest requirements)
+        stage: Stage to apply ("pre-push", "pr", "push-to-main", or None)
+
+    Returns:
+        Configuration with stage relaxations applied
+    """
+    # No relaxations for push-to-main or unknown stages
+    if stage is None or stage == "push-to-main":
+        return config
+
+    # Validate stage name
+    if stage not in VALID_STAGES:
+        raise ValueError(
+            f"Unknown stage '{stage}'. Valid stages: {', '.join(sorted(VALID_STAGES))}.\n"
+            f"Check for typos (e.g., 'pre_push' should be 'pre-push')."
+        )
+
+    # Deep copy config to avoid modifying original
+    import copy
+
+    config = copy.deepcopy(config)
+
+    # Apply relaxations for each gate
+    for gate_name, gate in config.gates.items():
+        if stage in gate.stage_relaxations:
+            relaxations = gate.stage_relaxations[stage]
+
+            # Apply each relaxation
+            for key, value in relaxations.items():
+                if hasattr(gate, key):
+                    setattr(gate, key, value)
+                else:
+                    # Log warning for unknown keys
+                    print(f"⚠️  Unknown relaxation key '{key}' for gate '{gate_name}' stage '{stage}'")
+
+    return config
