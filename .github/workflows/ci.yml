@@ -45,14 +45,14 @@ jobs:
 
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
 
-          # Get changed Python files (exclude tests and third-party packages)
+          # Get changed Python files (exclude only tests and third-party packages)
           git diff --name-only --diff-filter=ACMRT origin/$BASE_BRANCH...HEAD | \
             grep '\.py$' | \
             grep -v '^tests/' | \
             grep -v '/venv/' | \
             grep -v '/\.venv/' | \
             grep -v '/site-packages/' | \
-            xargs -r mypy || echo "No Python files to check or mypy passed"
+            xargs -r mypy --exclude '__pycache__' || echo "No Python files to check or mypy passed"
 
       - name: Run tests with coverage
         run: |
