@@ -86,6 +86,77 @@ jobs:
             echo "EOF" >> $GITHUB_OUTPUT
           fi
 
+      - name: Create introspection doc
+        if: steps.check_repo.outputs.should_update == 'true' && steps.update_submodule.outputs.has_changes == 'true'
+        run: |
+          TODAY=$(date +%Y-%m-%d)
+          TIMESTAMP=$(date +%H%M%S)
+          INTROSPECTION_FILE=".ai-sessions/$TODAY/commit-bot-propagate-$TIMESTAMP.md"
+
+          mkdir -p ".ai-sessions/$TODAY"
+
+          COMMIT_HASH="${{ steps.update_submodule.outputs.commit_hash }}"
+
+          cat > "$INTROSPECTION_FILE" <<'EOF'
+          # AI Introspection Session Log
+
+          ---
+          **Date**: $(date +%Y-%m-%d)
+          **Time**: $(date +%H:%M:%S)
+          **Actor**: org-standards-bot
+          **Event Type**: commit
+          **Confidence**: 10/10
+          **Tags**: [automated, org-standards-propagation, bot]
+          ---
+
+          ## What Was the Problem?
+
+          Automated propagation of org-standards updates to dependent repositories. No problem - routine submodule update.
+
+          ## Why Did It Happen?
+
+          org-standards main branch was updated. This workflow automatically creates PRs in dependent repos to update their org-standards submodule.
+
+          **Context I Lacked**:
+          - N/A - Automated task
+
+          **Assumptions I Made**:
+          - org-standards changes are backward compatible with this repo
+          - PR will be reviewed before merge
+
+          **Patterns I Followed**:
+          - Standard org-standards propagation workflow
+
+          ## How Could It Have Been Prevented?
+
+          **AI Could Have**:
+          - N/A - No issues encountered
+
+          **Human Could Have**:
+          - N/A - No issues encountered
+
+          **System Could Have**:
+          - N/A - No issues encountered
+
+          ## Actionable Changes
+
+          **CLAUDE.md Updates Needed**:
+          - [ ] None
+
+          **New Questions to Ask**:
+          - [ ] None
+
+          ## Pattern Recognition
+
+          **Similar Issues**:
+          - None - routine org-standards propagation
+
+          **Recurring Theme**:
+          - None - no challenges in automated propagation
+          EOF
+
+          echo "📝 Created introspection doc: $INTROSPECTION_FILE"
+
       - name: Create PR
         if: steps.check_repo.outputs.should_update == 'true' && steps.update_submodule.outputs.has_changes == 'true'
         env:
@@ -97,8 +168,8 @@ jobs:
           # Create and checkout new branch
           git checkout -b "$BRANCH_NAME"
 
-          # Stage and commit submodule update
-          git add org-standards
+          # Stage submodule update and introspection doc
+          git add org-standards .ai-sessions/
 
           cat > commit_msg.txt <<EOF
           chore: update org-standards to ${COMMIT_HASH}
