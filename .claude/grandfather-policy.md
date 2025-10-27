@@ -59,6 +59,119 @@ extra_args: --from-ref origin/main --to-ref HEAD  # ✅ Only checks changed file
 
 ---
 
+## Formatting vs Semantic Changes
+
+### The Problem
+
+Auto-formatters (like `ruff format`) touch files WITHOUT semantic changes. This creates a false positive for the "you touched it, you own it" rule.
+
+**Root Cause**: Conflating "touched by human" with "touched by automated tooling"
+
+### The Solution
+
+**Distinguish two types of changes**:
+
+#### 1. Formatting-Only Changes (Tool-Applied)
+
+**Definition**: Changes made purely by automated formatters (whitespace, line breaks, quotes, etc.)
+
+**Grandfather Policy**: **NOT APPLICABLE**
+
+**Detection**:
+```bash
+git diff --ignore-all-space --ignore-blank-lines --exit-code
+# Exit code 0 → Formatting only (no semantic changes)
+# Exit code 1 → Semantic changes detected
+```
+
+**Required Checks**:
+- ✅ Must pass `ruff format` check (advisory in CI)
+- ❌ Does NOT require fixing linting/mypy/coverage
+- ❌ Does NOT trigger full cleanup requirements
+
+**Example**:
+```python
+# Before (not formatted)
+def foo(x,y,z):
+    return x+y+z
+
+# After (ruff format applied)
+def foo(x, y, z):
+    return x + y + z
+```
+**Result**: No cleanup required - formatting only
+
+#### 2. Semantic Changes (Human-Authored)
+
+**Definition**: Changes to business logic, bug fixes, refactors, new features
+
+**Grandfather Policy**: **FULLY APPLICABLE**
+
+**Detection**:
+```bash
+git diff --ignore-all-space --ignore-blank-lines --exit-code
+# Exit code 1 → Semantic changes detected
+```
+
+**Required Checks**:
+- ✅ Fix ALL linting issues in file
+- ✅ Fix ALL type errors in file
+- ✅ Ensure 80%+ test coverage
+- ✅ Pass all pre-commit hooks
+- ✅ Full cleanup per grandfather policy
+
+**Example**:
+```python
+# Before
+def foo(x, y, z):
+    return x + y + z
+
+# After (added validation)
+def foo(x, y, z):
+    if x < 0:
+        raise ValueError("x must be positive")
+    return x + y + z
+```
+**Result**: Full cleanup required - semantic change
+
+#### 3. Mixed Changes (Formatting + Semantic)
+
+**Definition**: Same commit contains both formatting and semantic changes
+
+**Grandfather Policy**: **FULLY APPLICABLE** (semantic change detected)
+
+**Best Practice**: Split into two commits
+1. Commit 1: Formatting only (no cleanup required)
+2. Commit 2: Semantic changes (full cleanup required)
+
+**Detection Script**: `.github/scripts/detect-semantic-changes.sh`
+
+### Rationale
+
+**Why distinguish?**:
+- Auto-formatters are **tools**, not **developers**
+- Formatting doesn't indicate **intent** or **ownership**
+- Requiring cleanup for formatting blocks productivity without quality benefit
+
+**Why enforce on semantic?**:
+- Semantic changes indicate **intentional work** on the file
+- You understand the code enough to modify logic → you can clean it
+- Preserves boy scout rule for human-authored changes
+
+### Benefits
+
+**Developer Experience**:
+- ✅ Can enable auto-format-on-save without fear
+- ✅ Gradual formatting migration (no big-bang required)
+- ✅ Focus cleanup effort on files you're actually working on
+
+**Code Quality**:
+- ✅ Preserves grandfather policy for real work
+- ✅ Prevents false positives from automated tools
+- ✅ Maintains "touch = own" spirit for human changes
+
+---
+
 ## Examples
 
 ### Example 1: Fix Bug in Old File

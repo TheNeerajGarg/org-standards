@@ -44,6 +44,7 @@ class GateConfig:
     required: bool = True
     depends_on: list[str] = field(default_factory=list)
     omit_patterns: list[str] = field(default_factory=list)
+    skip_if_only_paths: list[str] = field(default_factory=list)
     fail_message: str = ""
     timeout_seconds: int = 300
     stage_relaxations: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -172,6 +173,11 @@ def execute_gates(config: QualityGatesConfig, phase: str = "pre-push") -> Execut
         if not gate.enabled:
             continue
 
+        # Check if gate should be skipped based on skip_if_only_paths
+        if _should_skip_gate(gate):
+            print(f"⏭️  Skipping {gate_name} (only documentation files modified)")
+            continue
+
         print(f"▶️  Running {gate_name} ({gate.tool})...")
 
         result = _execute_gate(gate)
@@ -197,6 +203,77 @@ def execute_gates(config: QualityGatesConfig, phase: str = "pre-push") -> Execut
         results=results,
         failures=failures,
     )
+
+
+def _get_modified_files() -> list[str]:
+    """Get list of files modified compared to main branch.
+
+    Returns:
+        List of modified file paths (relative to repo root)
+    """
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "origin/main...HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        files = [f.strip() for f in result.stdout.split("\n") if f.strip()]
+        return files
+    except subprocess.CalledProcessError:
+        # If git command fails (e.g., not in a git repo), return empty list
+        return []
+
+
+def _matches_pattern(file_path: str, pattern: str) -> bool:
+    """Check if file path matches a glob pattern.
+
+    Args:
+        file_path: File path to check
+        pattern: Glob pattern (e.g., "docs/**", ".ai-sessions/**/*.md")
+
+    Returns:
+        True if file matches pattern, False otherwise
+    """
+    import fnmatch
+
+    return fnmatch.fnmatch(file_path, pattern)
+
+
+def _should_skip_gate(gate: GateConfig) -> bool:
+    """Check if gate should be skipped based on skip_if_only_paths.
+
+    A gate is skipped if:
+    - Gate has skip_if_only_paths configured
+    - All modified files match at least one skip pattern
+    - At least one file is modified (no skip for empty changes)
+
+    Args:
+        gate: Gate configuration
+
+    Returns:
+        True if gate should be skipped, False otherwise
+    """
+    if not gate.skip_if_only_paths:
+        return False
+
+    modified_files = _get_modified_files()
+
+    # Don't skip if no files modified
+    if not modified_files:
+        return False
+
+    # Check if all files match at least one skip pattern
+    for file_path in modified_files:
+        matches_any = any(
+            _matches_pattern(file_path, pattern) for pattern in gate.skip_if_only_paths
+        )
+        if not matches_any:
+            # Found a file that doesn't match any skip pattern
+            return False
+
+    # All files matched skip patterns
+    return True
 
 
 def _execute_gate(gate: GateConfig) -> GateResult:
@@ -347,6 +424,7 @@ def _parse_config(config: dict) -> QualityGatesConfig:
             required=gate_dict["required"],
             depends_on=gate_dict.get("depends_on", []),
             omit_patterns=gate_dict.get("omit_patterns", []),
+            skip_if_only_paths=gate_dict.get("skip_if_only_paths", []),
             fail_message=gate_dict.get("fail_message", ""),
             timeout_seconds=gate_dict.get("timeout_seconds", 300),
         )

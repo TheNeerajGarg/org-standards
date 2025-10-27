@@ -17,8 +17,10 @@ from quality_gates import (
     GateConfig,
     GateResult,
     QualityGatesConfig,
+    _matches_pattern,
     _merge_configs,
     _parse_config,
+    _should_skip_gate,
     _validate_config,
     load_config,
 )
@@ -408,6 +410,188 @@ def test_gate_config_with_all_fields():
     assert gate.depends_on == ["testing"]
     assert gate.omit_patterns == ["playground/*"]
     assert gate.timeout_seconds == 60
+
+
+# Tests for skip_if_only_paths functionality
+
+
+def test_matches_pattern_exact_file():
+    """Test pattern matching for exact file paths."""
+    assert _matches_pattern("README.md", "README.md")
+    assert not _matches_pattern("CONTRIBUTING.md", "README.md")
+
+
+def test_matches_pattern_wildcard():
+    """Test pattern matching with wildcards."""
+    assert _matches_pattern(".ai-sessions/2025-10-27/commit-123456.md", ".ai-sessions/**")
+    assert _matches_pattern(".ai-sessions/2025-10-27/commit-123456.md", ".ai-sessions/**/*.md")
+    assert _matches_pattern("docs/architecture/design.md", "docs/**")
+    assert _matches_pattern("docs/architecture/design.md", "docs/**/*.md")
+
+
+def test_matches_pattern_no_match():
+    """Test pattern matching returns False for non-matches."""
+    assert not _matches_pattern("src/main.py", ".ai-sessions/**")
+    assert not _matches_pattern(".claude/prompts.md", ".ai-sessions/**")
+    assert not _matches_pattern("CLAUDE.md", "docs/**")
+
+
+def test_should_skip_gate_no_skip_patterns():
+    """Gate without skip_if_only_paths should not be skipped."""
+    gate = GateConfig(
+        name="coverage",
+        enabled=True,
+        tool="diff-cover",
+        command="diff-cover coverage.xml",
+        required=True,
+        skip_if_only_paths=[],
+    )
+
+    # Should not skip even with documentation files modified
+    assert not _should_skip_gate(gate)
+
+
+def test_should_skip_gate_all_files_match(monkeypatch):
+    """Gate should skip if all modified files match skip patterns."""
+    import quality_gates
+
+    gate = GateConfig(
+        name="coverage",
+        enabled=True,
+        tool="diff-cover",
+        command="diff-cover coverage.xml",
+        required=True,
+        skip_if_only_paths=[".ai-sessions/**", "docs/**", "README.md"],
+    )
+
+    # Mock git diff to return documentation-only files
+    def mock_get_modified_files():
+        return [
+            ".ai-sessions/2025-10-27/commit-123456.md",
+            "docs/architecture.md",
+            "README.md",
+        ]
+
+    monkeypatch.setattr(quality_gates, "_get_modified_files", mock_get_modified_files)
+
+    # Should skip because all files match skip patterns
+    assert quality_gates._should_skip_gate(gate)
+
+
+def test_should_skip_gate_mixed_files(monkeypatch):
+    """Gate should NOT skip if some files don't match skip patterns."""
+    import quality_gates
+
+    gate = GateConfig(
+        name="coverage",
+        enabled=True,
+        tool="diff-cover",
+        command="diff-cover coverage.xml",
+        required=True,
+        skip_if_only_paths=[".ai-sessions/**", "docs/**"],
+    )
+
+    # Mock git diff to return mixed files (docs + code)
+    def mock_get_modified_files():
+        return [
+            ".ai-sessions/2025-10-27/commit-123456.md",
+            "src/main.py",  # This is NOT in skip patterns
+        ]
+
+    monkeypatch.setattr(quality_gates, "_get_modified_files", mock_get_modified_files)
+
+    # Should NOT skip because src/main.py doesn't match skip patterns
+    assert not quality_gates._should_skip_gate(gate)
+
+
+def test_should_skip_gate_config_file_not_skipped(monkeypatch):
+    """Configuration files should NOT be skipped (not in skip patterns)."""
+    import quality_gates
+
+    gate = GateConfig(
+        name="coverage",
+        enabled=True,
+        tool="diff-cover",
+        command="diff-cover coverage.xml",
+        required=True,
+        skip_if_only_paths=[".ai-sessions/**", "docs/**", "README.md"],
+    )
+
+    # Mock git diff to return configuration files
+    def mock_get_modified_files():
+        return [
+            ".claude/prompts.md",  # Configuration, NOT documentation
+            "CLAUDE.md",  # Configuration, NOT documentation
+        ]
+
+    monkeypatch.setattr(quality_gates, "_get_modified_files", mock_get_modified_files)
+
+    # Should NOT skip because .claude/* and CLAUDE.md are NOT in skip patterns
+    assert not quality_gates._should_skip_gate(gate)
+
+
+def test_should_skip_gate_no_files_modified(monkeypatch):
+    """Gate should NOT skip if no files are modified."""
+    import quality_gates
+
+    gate = GateConfig(
+        name="coverage",
+        enabled=True,
+        tool="diff-cover",
+        command="diff-cover coverage.xml",
+        required=True,
+        skip_if_only_paths=[".ai-sessions/**", "docs/**"],
+    )
+
+    # Mock git diff to return empty list
+    def mock_get_modified_files():
+        return []
+
+    monkeypatch.setattr(quality_gates, "_get_modified_files", mock_get_modified_files)
+
+    # Should NOT skip when no files modified (safety: run gates)
+    assert not quality_gates._should_skip_gate(gate)
+
+
+def test_parse_config_includes_skip_if_only_paths():
+    """Parsed config should include skip_if_only_paths field."""
+    config_dict = {
+        "version": "1.0.0",
+        "gates": {
+            "coverage": {
+                "enabled": True,
+                "tool": "diff-cover",
+                "command": "diff-cover coverage.xml",
+                "required": True,
+                "skip_if_only_paths": [".ai-sessions/**", "docs/**"],
+            }
+        },
+        "execution_order": ["coverage"],
+    }
+
+    parsed = _parse_config(config_dict)
+
+    assert parsed.gates["coverage"].skip_if_only_paths == [".ai-sessions/**", "docs/**"]
+
+
+def test_parse_config_defaults_empty_skip_if_only_paths():
+    """Parsed config should default skip_if_only_paths to empty list."""
+    config_dict = {
+        "version": "1.0.0",
+        "gates": {
+            "coverage": {
+                "enabled": True,
+                "tool": "diff-cover",
+                "command": "diff-cover coverage.xml",
+                "required": True,
+            }
+        },
+        "execution_order": ["coverage"],
+    }
+
+    parsed = _parse_config(config_dict)
+
+    assert parsed.gates["coverage"].skip_if_only_paths == []
 
 
 if __name__ == "__main__":
