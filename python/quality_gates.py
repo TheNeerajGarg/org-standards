@@ -235,9 +235,9 @@ def _matches_pattern(file_path: str, pattern: str) -> bool:
     Returns:
         True if file matches pattern, False otherwise
     """
-    from pathlib import Path
+    import fnmatch
 
-    return Path(file_path).match(pattern)
+    return fnmatch.fnmatch(file_path, pattern)
 
 
 def _should_skip_gate(gate: GateConfig) -> bool:
