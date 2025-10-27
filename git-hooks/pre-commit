@@ -61,10 +61,10 @@ if [ "$BRANCH" = "main" ] || [ $(echo "$STAGED_FILES" | wc -l) -gt 10 ]; then
     else
         # Schema validation (BLOCKING)
         if command -v python3 &> /dev/null; then
-            # Check if validation script exists
-            if [ -f "scripts/validate-introspection.py" ]; then
+            # Check if validation script exists in org-standards (automatic propagation)
+            if [ -f "org-standards/scripts/validate-introspection.py" ]; then
                 echo -e "${BLUE}📝 Validating introspection schema...${NC}"
-                if python3 scripts/validate-introspection.py "$INTROSPECTION_FILE" 2>&1; then
+                if python3 org-standards/scripts/validate-introspection.py "$INTROSPECTION_FILE" 2>&1; then
                     echo -e "${GREEN}✅ Introspection schema valid${NC}"
                 else
                     echo -e "${RED}❌ BLOCKED: Invalid introspection schema${NC}"
