@@ -51,11 +51,8 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
 # GitHub Actions uses similar version
 
 # Install Python development tools (core tools used by all projects)
+# Note: ruff, mypy, pytest, pytest-cov are project-specific and installed via pip install -e .[dev]
 RUN pip install --break-system-packages \
-    ruff \
-    mypy \
-    pytest \
-    pytest-cov \
     pre-commit \
     build \
     twine \
