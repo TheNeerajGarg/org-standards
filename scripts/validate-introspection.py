@@ -68,8 +68,7 @@ def validate_introspection(file_path: str) -> tuple[bool, str]:
     if len(content.strip()) < 200:
         return (
             False,
-            f"Document too short ({len(content)} chars). "
-            "Introspection should provide meaningful analysis.",
+            f"Document too short ({len(content)} chars). Introspection should provide meaningful analysis.",
         )
 
     return True, "Valid introspection document"
