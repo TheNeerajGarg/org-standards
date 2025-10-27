@@ -5,6 +5,9 @@ Introspection Document Schema Validator
 Validates that introspection documents contain required sections.
 Used by pre-commit hook to enforce introspection quality.
 
+Purpose: Ensure meta-learning focus (not task logging).
+Goal: Improve efficiency/effectiveness across Human + Bot + System.
+
 Usage:
     python3 scripts/validate-introspection.py <file_path>
 
@@ -12,20 +15,21 @@ Exit codes:
     0: Valid introspection document
     1: Invalid (missing required sections or file not found)
 
-Required sections:
-    - ## What Was the Problem?
-    - ## Why Did It Happen?
-    - ## How Could It Have Been Prevented?
+Required sections (StyleGuru format - meta-learning focused):
+    - ## Challenges Encountered
+    - ## Mistakes Made
+    - ## How to Avoid Next Time
 """
 
 import sys
 from pathlib import Path
 
 # Required sections in introspection documents
+# Focus: Meta-learning for system improvement (not task logging)
 REQUIRED_SECTIONS = [
-    "## What Was the Problem?",
-    "## Why Did It Happen?",
-    "## How Could It Have Been Prevented?",
+    "## Challenges Encountered",
+    "## Mistakes Made",
+    "## How to Avoid Next Time",
 ]
 
 
