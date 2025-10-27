@@ -35,6 +35,20 @@ gates:
       - ".ai-sessions/*"
       - "*/tests/*"
       - "*/__pycache__/*"
+    # Skip coverage gate if ONLY documentation paths are modified
+    # CRITICAL: Configuration (.claude/*, CLAUDE.md) is NOT exempt!
+    skip_if_only_paths:
+      - ".ai-sessions/**"           # Introspection docs
+      - ".ai-sessions/**/*.md"      # Explicit: introspection markdown
+      - "docs/**"                   # Project documentation
+      - "docs/**/*.md"              # Explicit: docs markdown
+      - "README.md"                 # Root readme
+      - "CHANGELOG.md"              # Changelog
+      - "CONTRIBUTING.md"           # Contributing guide
+      # NOT exempted (configuration, not docs):
+      # - .claude/**/*.md           ❌ Prompts/config (AI behavior)
+      # - CLAUDE.md                 ❌ AI configuration
+      # - org-standards/.claude/**  ❌ Org-wide config
     fail_message: |
       Coverage below {threshold}%. Fix options:
       1. Add tests to reach {threshold}% coverage
