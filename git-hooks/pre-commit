@@ -41,48 +41,42 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [ "$BRANCH" = "main" ] || [ $(echo "$STAGED_FILES" | wc -l) -gt 10 ]; then
     echo -e "${BLUE}📝 Checking for introspection document...${NC}"
 
-    COMMIT_HASH=$(git write-tree)
-    SHORT_HASH=${COMMIT_HASH:0:7}
     TODAY=$(date +%Y-%m-%d)
-    INTROSPECTION_FILE=".ai-sessions/$TODAY/commit-$SHORT_HASH.md"
 
-    if [ ! -f "$INTROSPECTION_FILE" ]; then
+    # Check if ANY commit introspection file is staged for today
+    # This avoids circular dependency (timestamp-based, not hash-based)
+    STAGED_INTROSPECTION=$(git diff --cached --name-only | grep -E "\.ai-sessions/$TODAY/commit-[0-9]+\.md$" || echo "")
+
+    if [ -z "$STAGED_INTROSPECTION" ]; then
         echo -e "${YELLOW}⚠️  WARNING: Missing introspection document${NC}"
-        echo "   Expected: $INTROSPECTION_FILE"
+        echo "   Expected: .ai-sessions/$TODAY/commit-HHMMSS.md (staged)"
         echo "   This is required for main branch or significant changes"
         echo ""
 
         if [ "$BRANCH" = "main" ]; then
             echo -e "${RED}❌ BLOCKED: Introspection required for main branch${NC}"
             echo ""
-            echo "Create: cp .ai-session-template.md $INTROSPECTION_FILE"
+            echo "Create with timestamp: cp .ai-session-template.md .ai-sessions/$TODAY/commit-\$(date +%H%M%S).md"
+            echo "Then stage it: git add .ai-sessions/$TODAY/commit-*.md"
             exit 1
         fi
     else
-        # Schema validation (BLOCKING)
-        if command -v python3 &> /dev/null; then
-            # Check if validation script exists in org-standards (automatic propagation)
-            if [ -f "org-standards/scripts/validate-introspection.py" ]; then
-                echo -e "${BLUE}📝 Validating introspection schema...${NC}"
-                if python3 org-standards/scripts/validate-introspection.py "$INTROSPECTION_FILE" 2>&1; then
-                    echo -e "${GREEN}✅ Introspection schema valid${NC}"
-                else
-                    echo -e "${RED}❌ BLOCKED: Invalid introspection schema${NC}"
-                    echo ""
-                    echo "The introspection document must contain:"
-                    echo "  - ## What Was the Problem?"
-                    echo "  - ## Why Did It Happen?"
-                    echo "  - ## How Could It Have Been Prevented?"
-                    echo ""
-                    echo "Edit: $INTROSPECTION_FILE"
-                    exit 1
-                fi
+        # Validate schema if validation script exists
+        if command -v python3 &> /dev/null && [ -f "org-standards/scripts/validate-introspection.py" ]; then
+            echo -e "${BLUE}📝 Validating introspection schema...${NC}"
+            if python3 org-standards/scripts/validate-introspection.py "$STAGED_INTROSPECTION" 2>&1; then
+                echo -e "${GREEN}✅ Introspection schema valid${NC}"
+            else
+                echo -e "${RED}❌ BLOCKED: Invalid introspection schema${NC}"
+                echo ""
+                echo "The introspection document must contain:"
+                echo "  - ## Challenges Encountered"
+                echo "  - ## Mistakes Made"
+                echo "  - ## How to Avoid Next Time"
+                echo ""
+                echo "Edit: $STAGED_INTROSPECTION"
+                exit 1
             fi
-        fi
-
-        # Auto-stage introspection file if not already staged
-        if ! git diff --cached --name-only | grep -q "$INTROSPECTION_FILE"; then
-            git add "$INTROSPECTION_FILE" 2>/dev/null || true
         fi
         echo -e "${GREEN}✅ Introspection document found${NC}"
     fi
