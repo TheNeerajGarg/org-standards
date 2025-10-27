@@ -210,12 +210,8 @@ def main() -> None:
         sys.exit(0)
 
     # Get configuration
-    threshold_kb = int(
-        os.environ.get("CONTEXT_SIZE_THRESHOLD_KB", DEFAULT_THRESHOLD_KB)
-    )
-    warning_interval = int(
-        os.environ.get("CONTEXT_SIZE_WARNING_INTERVAL", DEFAULT_WARNING_INTERVAL_SEC)
-    )
+    threshold_kb = int(os.environ.get("CONTEXT_SIZE_THRESHOLD_KB", DEFAULT_THRESHOLD_KB))
+    warning_interval = int(os.environ.get("CONTEXT_SIZE_WARNING_INTERVAL", DEFAULT_WARNING_INTERVAL_SEC))
 
     # Get session ID and transcript path from hook data
     session_id = hook_data.get("session_id", "unknown")
