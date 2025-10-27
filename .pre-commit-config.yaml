@@ -1,0 +1,37 @@
+# Pre-commit hooks for org-standards repository
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Validate quality gate configuration
+  - repo: local
+    hooks:
+      - id: validate-quality-gates-config
+        name: Validate quality-gates.yaml
+        entry: python scripts/validate-config.py
+        language: system
+        files: ^config/quality-gates\.yaml$
+        pass_filenames: false
+        verbose: true
+
+  # Standard Python hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'  # Exclude markdown files (documentation, not code)
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: ['--unsafe']  # Allow custom YAML tags
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+
+  # Python formatting (ruff)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.6
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
