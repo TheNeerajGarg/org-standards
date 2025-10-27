@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "description": "Organization-wide Claude Code settings template. Copy to ~/.claude/settings.json or container /home/vscode/.claude/settings.json",
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /opt/org-standards/claude-code/hooks/track_reads.py 2>/dev/null || python3 ~/org-standards/claude-code/hooks/track_reads.py 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /opt/org-standards/claude-code/hooks/track_context_size.py 2>/dev/null || python3 ~/org-standards/claude-code/hooks/track_context_size.py 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /opt/org-standards/claude-code/hooks/track_messages_context.py 2>/dev/null || python3 ~/org-standards/claude-code/hooks/track_messages_context.py 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  },
+
+  "alwaysThinkingEnabled": true,
+
+  "permissions": {
+    "allow": [
+      "Read(//workspace/**)",
+      "Read(//home/vscode/**)",
+      "Read(//opt/org-standards/**)",
+      "Bash(python3:*)",
+      "Bash(pytest:*)",
+      "Bash(ruff:*)",
+      "Bash(mypy:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(pip:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
