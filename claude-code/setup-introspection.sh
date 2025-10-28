@@ -61,6 +61,13 @@ cat > "$SETTINGS_FILE" <<'EOF'
         "type": "command",
         "command": "python3 ~/org-standards/claude-code/introspection/current/hooks/session_end.py"
       }]
+    }],
+    "UserPromptSubmit": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "python3 ~/org-standards/claude-code/hooks/track_messages_context.py 2>/dev/null || true"
+      }]
     }]
   }
 }
@@ -89,7 +96,28 @@ else
 fi
 echo ""
 
-# Step 6: Instructions
+# Step 6: Validate configuration
+echo "Validating hook configuration..."
+
+# Check that all expected hooks are present
+EXPECTED_HOOKS=("PostToolUse" "SessionEnd" "UserPromptSubmit")
+MISSING_HOOKS=()
+
+for hook in "${EXPECTED_HOOKS[@]}"; do
+    if ! grep -q "\"$hook\"" "$SETTINGS_FILE"; then
+        MISSING_HOOKS+=("$hook")
+    fi
+done
+
+if [ ${#MISSING_HOOKS[@]} -eq 0 ]; then
+    echo "✅ All hooks configured (PostToolUse, SessionEnd, UserPromptSubmit)"
+else
+    echo "⚠️  WARNING: Missing hooks: ${MISSING_HOOKS[*]}"
+    echo "   Configuration may be incomplete"
+fi
+echo ""
+
+# Step 7: Instructions
 echo "=== Setup Complete! ==="
 echo ""
 echo "📋 Next Steps:"
@@ -105,11 +133,13 @@ echo ""
 echo "3. Read documentation:"
 echo "   cat ~/org-standards/claude-code/README.md"
 echo ""
+echo "=== Hooks Installed ==="
+echo "✅ PostToolUse: Automatic failure tracking"
+echo "✅ SessionEnd: Pattern detection & introspection generation"
+echo "✅ UserPromptSubmit: Conversation context size warnings (>10KB)"
+echo ""
 echo "=== This Works Everywhere ==="
 echo "✅ All repositories (StyleGuru, Syra, etc.)"
-echo "✅ Automatic failure tracking"
-echo "✅ Pattern detection (recurring errors)"
-echo "✅ Introspection generation"
 echo "✅ Company-wide standard"
 echo ""
 echo "Questions? Ask in #engineering Slack channel"
