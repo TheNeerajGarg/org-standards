@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "description": "Organization-wide MANDATORY Claude Code settings. Symlinked from system location (/etc/claude-code/ or /Library/Application Support/ClaudeCode/) to /workspace/org-standards/claude-code/managed-settings.json. Update via: cd /workspace/org-standards && git pull",
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "comment": "Track all Read tool calls for cost analysis",
+            "command": "python3 /workspace/org-standards/claude-code/hooks/track_reads.py 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "comment": "Track tool I/O sizes for context management",
+            "command": "python3 /workspace/org-standards/claude-code/hooks/track_context_size.py 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "comment": "Warn at 10KB conversation message threshold",
+            "command": "python3 /workspace/org-standards/claude-code/hooks/track_messages_context.py 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
