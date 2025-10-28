@@ -1,42 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "description": "Organization-wide Claude Code settings template. Copy to ~/.claude/settings.json or container /home/vscode/.claude/settings.json",
-
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 /opt/org-standards/claude-code/hooks/track_reads.py 2>/dev/null || python3 ~/org-standards/claude-code/hooks/track_reads.py 2>/dev/null || true"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 /opt/org-standards/claude-code/hooks/track_context_size.py 2>/dev/null || python3 ~/org-standards/claude-code/hooks/track_context_size.py 2>/dev/null || true"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 /opt/org-standards/claude-code/hooks/track_messages_context.py 2>/dev/null || python3 ~/org-standards/claude-code/hooks/track_messages_context.py 2>/dev/null || true"
-          }
-        ]
-      }
-    ]
-  },
+  "description": "User-specific Claude Code settings template. Hooks are managed via system-level managed-settings.json (Mac: /Library/Application Support/ClaudeCode/managed-settings.json, Container: /etc/claude-code/managed-settings.json). Copy this template to ~/.claude/settings.json for personal preferences only.",
 
   "alwaysThinkingEnabled": true,
 
