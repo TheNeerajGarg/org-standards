@@ -86,38 +86,8 @@ jobs:
             echo "EOF" >> $GITHUB_OUTPUT
           fi
 
-      - name: Sync devcontainer.json from org-standards template
-        if: steps.check_repo.outputs.should_update == 'true'
-        id: sync_devcontainer
-        run: |
-          # Copy template to repo (overwrite local copy with template)
-          cp org-standards/devcontainer/devcontainer.json .devcontainer/devcontainer.json
-
-          # Check if devcontainer.json changed
-          if git diff --quiet .devcontainer/devcontainer.json; then
-            echo "✅ devcontainer.json already in sync with template"
-            echo "devcontainer_changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "📝 devcontainer.json updated from org-standards template"
-            git add .devcontainer/devcontainer.json
-            echo "devcontainer_changed=true" >> $GITHUB_OUTPUT
-
-          fi
-
-      - name: Check if any changes need to be committed
-        if: steps.check_repo.outputs.should_update == 'true'
-        id: check_changes
-        run: |
-          # Has changes if either submodule OR devcontainer changed
-          if [ "${{ steps.update_submodule.outputs.has_changes }}" == "true" ] || \
-             [ "${{ steps.sync_devcontainer.outputs.devcontainer_changed }}" == "true" ]; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Create introspection doc
-        if: steps.check_repo.outputs.should_update == 'true' && steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_repo.outputs.should_update == 'true' && steps.update_submodule.outputs.has_changes == 'true'
         run: |
           TODAY=$(date +%Y-%m-%d)
           TIMESTAMP=$(date +%H%M%S)
@@ -141,13 +111,11 @@ jobs:
 
           ## What Was the Problem?
 
-          Automated propagation of org-standards updates to dependent repositories. No problem - routine org-standards sync.
+          Automated propagation of org-standards updates to dependent repositories. No problem - routine submodule update.
 
           ## Why Did It Happen?
 
-          org-standards main branch was updated. This workflow automatically creates PRs in dependent repos to:
-          1. Update org-standards submodule pointer
-          2. Sync devcontainer.json from org-standards template (single source of truth)
+          org-standards main branch was updated. This workflow automatically creates PRs in dependent repos to update their org-standards submodule.
 
           **Context I Lacked**:
           - N/A - Automated task
@@ -190,7 +158,7 @@ jobs:
           echo "📝 Created introspection doc: $INTROSPECTION_FILE"
 
       - name: Create PR
-        if: steps.check_repo.outputs.should_update == 'true' && steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_repo.outputs.should_update == 'true' && steps.update_submodule.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_GITHUB_TOKEN }}
         run: |
@@ -200,31 +168,15 @@ jobs:
           # Create and checkout new branch
           git checkout -b "$BRANCH_NAME"
 
-          # Stage all changes (submodule, devcontainer, introspection doc)
-          git add org-standards .devcontainer/devcontainer.json .ai-sessions/
+          # Stage submodule update and introspection doc
+          git add org-standards .ai-sessions/
 
-          # Build commit message based on what changed
           cat > commit_msg.txt <<EOF
-          chore: sync org-standards configuration
+          chore: update org-standards to ${COMMIT_HASH}
 
-          EOF
-
-          if [ "${{ steps.update_submodule.outputs.has_changes }}" == "true" ]; then
-            cat >> commit_msg.txt <<EOF
-          org-standards submodule → ${COMMIT_HASH}
+          org-standards changes:
           ${{ steps.update_submodule.outputs.commit_msg }}
 
-          EOF
-          fi
-
-          if [ "${{ steps.sync_devcontainer.outputs.devcontainer_changed }}" == "true" ]; then
-            cat >> commit_msg.txt <<EOF
-          devcontainer.json → synced from org-standards template (single source of truth)
-
-          EOF
-          fi
-
-          cat >> commit_msg.txt <<EOF
           This PR was automatically created by org-standards propagation workflow.
 
           🤖 Generated with org-standards propagation bot
@@ -237,48 +189,23 @@ jobs:
 
           # Create PR using gh CLI
           cat > pr_body.txt <<EOF
-          ## org-standards Sync
+          ## org-standards Update
 
-          This PR syncs org-standards configuration to this repo.
+          This PR updates the org-standards submodule to the latest version.
 
-          EOF
-
-          if [ "${{ steps.update_submodule.outputs.has_changes }}" == "true" ]; then
-            cat >> pr_body.txt <<EOF
-          ### org-standards Submodule Update
-
-          **Commit**: [$COMMIT_HASH](https://github.com/TheNeerajGarg/org-standards/commit/$COMMIT_HASH)
+          **org-standards commit**: [$COMMIT_HASH](https://github.com/TheNeerajGarg/org-standards/commit/$COMMIT_HASH)
 
           **Changes**:
           \`\`\`
           ${{ steps.update_submodule.outputs.commit_msg }}
           \`\`\`
 
-          EOF
-          fi
-
-          if [ "${{ steps.sync_devcontainer.outputs.devcontainer_changed }}" == "true" ]; then
-            cat >> pr_body.txt <<EOF
-          ### devcontainer.json Sync
-
-          ✅ Synced \`.devcontainer/devcontainer.json\` from org-standards template (single source of truth)
-
-          **Impact**: Dev container config now matches org-standards exactly:
-          - All repos use identical dev environment
-          - GH_TOKEN-like fixes auto-propagate
-          - No more manual sync errors
-
-          EOF
-          fi
-
-          cat >> pr_body.txt <<EOF
           ## What to Review
 
           1. Check if any breaking changes in org-standards affect this repo
           2. Run local tests: \`pytest\`
           3. Check pre-push hook still works: \`.git/hooks/pre-push\`
           4. Review quality gate configuration changes (if any)
-          5. If devcontainer changed: Rebuild container after merge
 
           ## How to Test
 
@@ -308,24 +235,14 @@ jobs:
           To disable auto-updates for this repo, remove it from the workflow matrix.
           EOF
 
-          # Determine PR title based on what changed
-          if [ "${{ steps.update_submodule.outputs.has_changes }}" == "true" ] && \
-             [ "${{ steps.sync_devcontainer.outputs.devcontainer_changed }}" == "true" ]; then
-            PR_TITLE="chore: sync org-standards configuration (submodule + devcontainer)"
-          elif [ "${{ steps.update_submodule.outputs.has_changes }}" == "true" ]; then
-            PR_TITLE="chore: update org-standards to ${COMMIT_HASH}"
-          else
-            PR_TITLE="chore: sync devcontainer.json from org-standards"
-          fi
-
           # Create PR (labels are optional - don't fail if they don't exist)
           gh pr create \
-            --title "$PR_TITLE" \
+            --title "chore: update org-standards to ${COMMIT_HASH}" \
             --body-file pr_body.txt \
             --base main \
             --head "$BRANCH_NAME" || \
           gh pr create \
-            --title "$PR_TITLE" \
+            --title "chore: update org-standards to ${COMMIT_HASH}" \
             --body-file pr_body.txt \
             --base main \
             --head "$BRANCH_NAME"
@@ -335,7 +252,7 @@ jobs:
         run: |
           if [ "${{ steps.check_repo.outputs.should_update }}" != "true" ]; then
             echo "⏭️ Skipped ${{ matrix.repo }} (not in manual trigger list)"
-          elif [ "${{ steps.check_changes.outputs.has_changes }}" != "true" ]; then
+          elif [ "${{ steps.update_submodule.outputs.has_changes }}" != "true" ]; then
             echo "✅ ${{ matrix.repo }} is already up to date"
           else
             echo "📬 Created PR for ${{ matrix.repo }}"
