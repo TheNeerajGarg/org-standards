@@ -90,6 +90,13 @@ jobs:
         if: steps.check_repo.outputs.should_update == 'true'
         id: sync_devcontainer
         run: |
+          # Check if repo uses devcontainer
+          if [ ! -d ".devcontainer" ]; then
+            echo "⏭️  Repo does not use devcontainer, skipping sync"
+            echo "devcontainer_changed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           # Copy template to repo (overwrite local copy with template)
           cp org-standards/devcontainer/devcontainer.json .devcontainer/devcontainer.json
 
@@ -101,7 +108,6 @@ jobs:
             echo "📝 devcontainer.json updated from org-standards template"
             git add .devcontainer/devcontainer.json
             echo "devcontainer_changed=true" >> $GITHUB_OUTPUT
-
           fi
 
       - name: Check if any changes need to be committed
