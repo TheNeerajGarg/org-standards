@@ -445,20 +445,32 @@
 
 **Purpose**: Answer "What are we building?" Requirements ONLY. NO CODE.
 
+**Template**: [workflow/PRD_TEMPLATE.md](../workflow/PRD_TEMPLATE.md)
+
 **MANDATORY Structure**:
 1. **Abstract** (30 lines max) - Solution overview, features, phases
-2. **Features & Requirements** - What must it do?
-3. **User Stories** - Who needs what?
-4. **Non-Functional Requirements** - Performance, scale, security
-5. **Implementation Phases** - What's in each phase?
-6. **Success Metrics** - Detailed metrics with targets
+2. **Deployment Environments & Repository Specifications** - Where it will be deployed and tested
+3. **Features & Requirements** - What must it do?
+4. **User Stories (with E2E Test Requirements)** - Who needs what? How will we test end-to-end?
+5. **Non-Functional Requirements** - Performance, scale, security
+6. **Implementation Phases** - What's in each phase?
+7. **Success Metrics** - Detailed metrics with targets
+
+**CRITICAL - Deployment & Testing Requirements**:
+- **Deployment Environments**: Specify Native Mac, Container on Mac, GitHub Actions, etc.
+- **Repository Matrix**: For Syra/Org-standards work, specify which repos (org-standards, syra, StyleGuru, syra-playground)
+- **E2E Test Requirements**: EVERY user story MUST have E2E test requirements for ALL appropriate environments
+- **Deployment Matrix**: Environment × Repo × E2E Tests matrix required (see PRD template Section 2.3)
 
 **MUST be in PRD** ✅:
 - Feature descriptions (business terms)
 - Requirements (functional + non-functional)
-- User stories
+- User stories **WITH E2E test requirements**
 - Success metrics
 - Phases and scope
+- **Deployment environment specifications**
+- **Repository deployment matrix**
+- **E2E test scenarios for each user story**
 
 **MUST NOT be in PRD** ❌:
 - **NO CODE** - Zero code examples
@@ -467,7 +479,7 @@
 - **NO FUNCTION SIGNATURES** - No def foo(x: int)
 - **NO ALGORITHMS** - No implementation details
 - **NO CONFIG VALUES** - No timeout=300s
-- **NO TEST CASES** - Move to ERD
+- **NO TEST CASES** - Move to ERD (but E2E test requirements OK)
 
 ### ERD: Engineering Requirements Document (~1000 lines max)
 
@@ -478,11 +490,76 @@
 2. **Architecture** - Components, data flow, APIs
 3. **Data Models** - Schemas, database design
 4. **Implementation Tasks** - High-level breakdown (6-12 hour chunks)
-5. **Testing Strategy** - Unit, integration, E2E
-6. **Error Handling** - Retry logic, timeouts
-7. **Configuration** - File paths, env vars
+5. **Testing Strategy** - Unit, integration, **E2E (CRITICAL)**
+6. **E2E Test Implementation Plan** - MANDATORY mapping from PRD user stories to tests
+7. **Error Handling** - Retry logic, timeouts
+8. **Configuration** - File paths, env vars
+9. **Deployment & Rollback** - How to deploy to all required environments × repos
 
 **Note**: For complex ERDs (>3 components or >8 hours), create a separate **Execution Plan** after ERD approval. See [.claude/execution-plan-standards.md](.claude/execution-plan-standards.md).
+
+**CRITICAL - E2E Test Requirements (From PRD)**:
+- **EVERY user story in the PRD MUST have E2E tests implemented**
+- **E2E tests must run in ALL appropriate environments** (Native Mac, Container, GitHub Actions)
+- **E2E tests must validate deployment in ALL required repos** (org-standards, syra, StyleGuru, etc.)
+- **ERD must include a mapping table**: PRD User Story → E2E Test Implementation → Test Files → Environments
+
+**Example E2E Test Mapping Table** (MANDATORY in Section 6):
+```markdown
+## 6. E2E Test Implementation Plan
+
+**CRITICAL**: This section maps all PRD user stories to E2E test implementations.
+
+| PRD User Story | E2E Test ID | Test File Location | Environments | Repos | Status |
+|----------------|-------------|-------------------|--------------|-------|--------|
+| US-1: Developer can run quality gates locally | E2E-US-001 | tests/e2e/test_quality_gates_local.py | Native Mac, Container, GHA | org-standards, syra | ☐ Implemented |
+| US-2: Workflow changes skip coverage gates | E2E-US-002 | tests/e2e/test_branch_policies.py | Native Mac, Container, GHA | org-standards, syra, StyleGuru | ☐ Implemented |
+| US-3: Emergency bypass tracked and logged | E2E-US-003 | tests/e2e/test_emergency_bypass.py | Native Mac, Container, GHA | org-standards, syra | ☐ Implemented |
+
+**E2E Test Details**:
+
+### E2E-US-001: Developer can run quality gates locally
+
+**Scenarios**:
+1. **Happy Path**: All gates pass
+   - Setup: Clean repo with passing code
+   - Test: Run quality_gates.py on main branch
+   - Verify: All gates execute, exit code 0
+   - Environments: Native Mac, Container on Mac, GitHub Actions
+   - Repos: org-standards (primary), syra (propagation test)
+
+2. **Error Handling**: Gate failure with actionable message
+   - Setup: Introduce linting error
+   - Test: Run quality_gates.py
+   - Verify: Linting gate fails with fix suggestion, exit code 1
+   - Environments: All
+
+3. **Branch Awareness**: Test branch exemptions
+   - Setup: Switch to test/example branch
+   - Test: Run quality_gates.py
+   - Verify: Coverage/type-checking skipped
+   - Environments: All
+
+**Implementation**:
+\`\`\`python
+# tests/e2e/test_quality_gates_local.py
+
+def test_us001_happy_path_all_gates_pass():
+    """E2E-US-001 Scenario 1: All gates pass on main branch"""
+    # Test implementation
+    pass
+
+def test_us001_gate_failure_actionable_message():
+    """E2E-US-001 Scenario 2: Gate failure with clear error"""
+    # Test implementation
+    pass
+
+def test_us001_branch_awareness_test_branch():
+    """E2E-US-001 Scenario 3: Test branch exemptions work"""
+    # Test implementation
+    pass
+\`\`\`
+```
 
 **MUST be in ERD** ✅:
 - Code examples
@@ -496,6 +573,9 @@
 - Retry logic with backoff strategies
 - Database schemas with field types
 - API endpoint specifications
+- **E2E test implementation plan with mapping from PRD user stories**
+- **Test files, scenarios, and implementation details for ALL PRD user stories**
+- **Deployment instructions for all required environments × repos**
 
 ### Stop-Check Questions Before Adding Content
 
@@ -1058,6 +1138,44 @@ Fix: Split File I/O into separate abstraction layer
 - [ ] Evidence array format: `[{artifact_id, confidence}, ...]`
 - [ ] Overall confidence calculation?
 
+### Section 8A: E2E Test Implementation (CRITICAL - MANDATORY)
+
+**E2E Test Mapping from PRD** (MANDATORY - Feature NOT complete without this):
+- [ ] Listed ALL user stories from PRD
+- [ ] For each user story: Created E2E test ID (E2E-US-XXX format)
+- [ ] For each user story: Specified test file location (tests/e2e/test_*.py)
+- [ ] For each user story: Listed all environments where test must run (Native Mac, Container, GHA)
+- [ ] For each user story: Listed all repos where test must pass (org-standards, syra, StyleGuru, etc.)
+- [ ] Created E2E test mapping table (see ERD template Section 6 for format)
+
+**E2E Test Scenarios**:
+- [ ] For each E2E test: Documented 2-5 test scenarios (happy path, error cases, edge cases)
+- [ ] For each scenario: Specified setup, action, expected outcome
+- [ ] For each scenario: Listed which environments apply
+- [ ] For each scenario: Included verification criteria
+
+**E2E Test Implementation Details**:
+- [ ] For each E2E test: Provided code skeleton or pseudocode
+- [ ] For each E2E test: Specified test data/fixtures needed
+- [ ] For each E2E test: Documented dependencies (other tests, external services)
+- [ ] For each E2E test: Estimated execution time
+
+**Deployment Matrix Integration**:
+- [ ] Created deployment matrix: Environment × Repo × E2E Tests
+- [ ] For each cell: Specified if test is required (☑ Required) or not applicable (☐ N/A)
+- [ ] Verified ALL PRD user stories covered in matrix
+- [ ] Verified matrix matches PRD Section 2.3 deployment matrix
+
+**Example Checklist Items**:
+```markdown
+✅ US-1 mapped to E2E-US-001
+✅ E2E-US-001 test file: tests/e2e/test_quality_gates_local.py
+✅ E2E-US-001 environments: Native Mac, Container on Mac, GitHub Actions
+✅ E2E-US-001 repos: org-standards, syra
+✅ E2E-US-001 scenarios documented (3 scenarios: happy path, error handling, branch awareness)
+✅ E2E-US-001 implementation skeleton provided
+```
+
 ### Section 9: Optimization Targets (CRITICAL - Prevents Issue #4)
 
 **Verify Optimization Priorities**:
@@ -1151,7 +1269,7 @@ Fix: Split File I/O into separate abstraction layer
 ### Completion Criteria
 
 **ERD is NOT complete until**:
-- [ ] All 40 checklist items verified
+- [ ] All 40+ checklist items verified (including Section 8A: E2E Test Implementation)
 - [ ] "Context Applied" section present (3-5 principles)
 - [ ] "Assumptions Made" section present (10+ assumptions)
 - [ ] "Questions for Clarification" section present (5-10 questions)
@@ -1160,6 +1278,17 @@ Fix: Split File I/O into separate abstraction layer
 - [ ] Optimization targets verified against CLAUDE.md
 - [ ] Anti-patterns section present (what NOT to do)
 - [ ] Low confidence decisions (<7/10) flagged for human review
+- [ ] **E2E Test Implementation Plan complete** (CRITICAL):
+  - [ ] E2E test mapping table created (all PRD user stories → E2E tests)
+  - [ ] E2E test scenarios documented for each user story (2-5 scenarios per story)
+  - [ ] E2E test implementation details provided (code skeletons, test data)
+  - [ ] Deployment matrix: Environment × Repo × E2E Tests specified
+  - [ ] All PRD user stories have corresponding E2E tests
+- [ ] **Deployment & Rollback Plan complete**:
+  - [ ] Deployment instructions for ALL required environments (Native Mac, Container, GitHub Actions)
+  - [ ] Deployment instructions for ALL required repos (org-standards, syra, StyleGuru, etc.)
+  - [ ] Rollback procedure documented with specific commands
+  - [ ] Success criteria for deployment verification
 
 **Present to human as DRAFT with questions, NOT as final ERD**
 

@@ -74,13 +74,22 @@ N+4. Run pre-commit hooks: `pre-commit run --all-files`
 N+5. Verify type hints present (all new functions)
 N+6. Verify docstrings present (all new functions)
 N+7. Identify integration tests needed (or create follow-up issue)
-N+8. Update documentation (if interfaces changed)
+N+8. Verify E2E tests exist for all PRD user stories (see E2E test mapping)
+N+9. Update documentation (if interfaces changed)
+
+### Deployment Verification (CRITICAL - NEW REQUIREMENT)
+N+10. Fill out deployment matrix (environments × repos)
+N+11. Deploy to ALL required environments (Native Mac, Container, GHA)
+N+12. Deploy to ALL required repositories (org-standards, syra, StyleGuru, syra-playground)
+N+13. Run E2E tests in each environment × repo combination
+N+14. Verify all E2E tests pass in deployment matrix
 
 ### Completion (CRITICAL - Task NOT Done Until This Step)
-N+9. Create PR with verification results
-N+10. Get PR approved (if required)
-N+11. Merge PR to main
-N+12. **Verify merged code pushed to main** (git pull origin main shows your changes)
+N+15. Create PR with verification results + deployment matrix
+N+16. Get PR approved (if required)
+N+17. Merge PR to main (in ALL required repos)
+N+18. **Verify merged code pushed to main** (git pull origin main shows your changes in ALL repos)
+N+19. **Verify deployment complete** (all deployment matrix cells marked "Deployed" and "Pass")
 
 **CRITICAL**: A feature is NOT "done" until it is merged and pushed to main. Code that exists only in a PR or local branch is NOT done.
 ```
@@ -161,6 +170,7 @@ Bot execution:
 - [ ] **New unit tests added** (for all new functions/classes)
 - [ ] **Integration tests identified** (document which needed)
 - [ ] **Integration tests added** (if in scope, or create issue)
+- [ ] **E2E tests added** (for all PRD user stories - see deployment matrix below)
 - [ ] **Code coverage ≥80%** (or maintains existing)
 - [ ] **Type hints present** (all function parameters/returns)
 - [ ] **Docstrings present** (all public functions, Google style)
@@ -175,8 +185,45 @@ Bot execution:
 - [ ] **PR created and reviewed** (if required by project)
 - [ ] **PR merged to main** (code is in main branch)
 - [ ] **VERIFIED code pushed to main** (git pull origin main shows your changes)
+- [ ] **DEPLOYED to all required environments × repos** (see deployment matrix below)
 
-**CRITICAL**: Task is NOT "done" until code is merged and pushed to main. Code in PR or local branch = NOT DONE.
+**CRITICAL - Deployment Matrix Requirements**:
+
+Task is NOT "done" until:
+1. Code is merged and pushed to main
+2. **Deployed to ALL required environments** (Native Mac, Container on Mac, GitHub Actions)
+3. **Deployed to ALL required repositories** (org-standards, syra, StyleGuru, syra-playground)
+4. **E2E tests pass in ALL environments × repos**
+
+**Deployment Matrix Template** (fill this out for each task):
+
+| Environment | org-standards | syra | StyleGuru | syra-playground | E2E Tests Status |
+|-------------|--------------|------|-----------|----------------|------------------|
+| Native Mac | ☐ N/A ☐ Required ☐ Deployed | ☐ N/A ☐ Required ☐ Deployed | ☐ N/A ☐ Required ☐ Deployed | ☐ N/A ☐ Required ☐ Deployed | ☐ Pass ☐ Fail ☐ N/A |
+| Container on Mac | ☐ N/A ☐ Required ☐ Deployed | ☐ N/A ☐ Required ☐ Deployed | ☐ N/A ☐ Required ☐ Deployed | ☐ N/A ☐ Required ☐ Deployed | ☐ Pass ☐ Fail ☐ N/A |
+| GitHub Actions | ☐ N/A ☐ Required ☐ Deployed | ☐ N/A ☐ Required ☐ Deployed | ☐ N/A ☐ Required ☐ Deployed | ☐ N/A ☐ Required ☐ Deployed | ☐ Pass ☐ Fail ☐ N/A |
+
+**Example - Quality Gates v1.1.0**:
+
+| Environment | org-standards | syra | StyleGuru | syra-playground | E2E Tests Status |
+|-------------|--------------|------|-----------|----------------|------------------|
+| Native Mac | ☑ Required ☑ Deployed | ☑ Required ☑ Deployed | ☑ Required ☑ Deployed | ☑ Required ☑ Deployed | ☑ Pass |
+| Container on Mac | ☑ Required ☑ Deployed | ☑ Required ☑ Deployed | ☑ Required ☑ Deployed | ☐ N/A | ☑ Pass |
+| GitHub Actions | ☑ Required ☑ Deployed | ☑ Required ☑ Deployed | ☑ Required ☑ Deployed | ☑ Required ☑ Deployed | ☑ Pass |
+
+**E2E Test Mapping** (if PRD exists with user stories):
+
+For each PRD user story, verify E2E tests exist and pass:
+
+| PRD User Story | E2E Test ID | Test File | Environments Tested | Repos Tested | Status |
+|----------------|-------------|-----------|-------------------|--------------|--------|
+| US-1: [Description] | E2E-US-001 | tests/e2e/test_us_001.py | Native Mac, Container, GHA | org-standards, syra | ☐ Pass |
+| US-2: [Description] | E2E-US-002 | tests/e2e/test_us_002.py | Native Mac, Container, GHA | org-standards, syra, StyleGuru | ☐ Pass |
+
+**CRITICAL**: Task is NOT "done" until:
+- Code merged to main in all required repos
+- Deployed and tested in all required environments
+- All E2E tests pass in deployment matrix
 
 **Verification Commands**:
 ```bash

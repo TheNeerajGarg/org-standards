@@ -20,6 +20,9 @@ Business Ask (Container Issue)
 ├── Task: Create PRD → PM works with AI
 │   └── PRD Document Issue
 │       - Product requirements
+│       - Deployment environments (Native Mac, Container, GitHub Actions)
+│       - Repository deployment matrix (org-standards, syra, StyleGuru, etc.)
+│       - User stories with E2E test requirements
 │       - Label: prd-ready-for-review
 │       - Review Process: PM, Eng, UX bots
 │       - Result: prd-approved
@@ -27,6 +30,8 @@ Business Ask (Container Issue)
 └── Task: Create ERD → Eng works with AI
     └── ERD Document Issue
         - Engineering design
+        - E2E test implementation plan (mapping from PRD user stories)
+        - Deployment instructions (all environments × repos)
         - Label: erd-ready-for-review
         - Review Process: PM, Eng, UX bots
         - Result: erd-approved
@@ -94,16 +99,27 @@ gh issue create --title "Business Ask: [Feature Name]" \
 **System Action**: Creates task "Create PRD for #53", assigns to PM
 
 **PM Action**:
-1. Work with AI to create PRD
-2. Create PRD issue:
+1. Work with AI to create PRD using **PRD Template** ([workflow/PRD_TEMPLATE.md](PRD_TEMPLATE.md))
+2. **CRITICAL - PRD must include**:
+   - Deployment environments specification (Native Mac, Container on Mac, GitHub Actions)
+   - Repository deployment matrix (which repos: org-standards, syra, StyleGuru, syra-playground)
+   - User stories **with E2E test requirements**
+   - Deployment matrix: Environment × Repo × E2E Tests
+3. Create PRD issue:
    ```bash
    gh issue create --title "PRD: [Feature Name]" \
      --body "$(cat prd.md)" \
      --label "prd-ready-for-review"
    ```
-3. Link to parent: "Parent: #53"
+4. Link to parent: "Parent: #53"
 
 **System Action**: Same review process as BRD → `prd-approved`
+
+**PRD Validation** (automated checks):
+- [ ] Deployment environments section present (Section 2.1)
+- [ ] Repository deployment matrix present (Section 2.2)
+- [ ] All user stories have E2E test requirements (Section 4)
+- [ ] Deployment matrix (env × repo × tests) present (Section 2.3)
 
 ---
 
@@ -114,16 +130,29 @@ gh issue create --title "Business Ask: [Feature Name]" \
 **System Action**: Creates task "Create ERD for #53", assigns to Eng
 
 **Eng Action**:
-1. Work with AI to create ERD
-2. Create ERD issue:
+1. Work with AI to create ERD following **ERD Pre-Flight Checklist** ([.claude/brd-prd-erd-standards.md](../.claude/brd-prd-erd-standards.md#mandatory-erd-pre-flight-checklist))
+2. **CRITICAL - ERD must include**:
+   - E2E Test Implementation Plan (Section 6): Mapping from ALL PRD user stories to E2E tests
+   - E2E test scenarios for each user story (2-5 scenarios per story)
+   - E2E test implementation details (test files, code skeletons, test data)
+   - Deployment matrix: Environment × Repo × E2E Tests
+   - Deployment & Rollback Plan (Section 9): Instructions for ALL environments × repos
+3. Create ERD issue:
    ```bash
    gh issue create --title "ERD: [Feature Name]" \
      --body "$(cat erd.md)" \
      --label "erd-ready-for-review"
    ```
-3. Link to parent: "Parent: #53"
+4. Link to parent: "Parent: #53"
 
 **System Action**: Same review process → `erd-approved`
+
+**ERD Validation** (automated checks):
+- [ ] E2E Test Implementation Plan present with mapping table (Section 6)
+- [ ] All PRD user stories have corresponding E2E tests
+- [ ] E2E test scenarios documented (2-5 scenarios per user story)
+- [ ] Deployment instructions for all required environments × repos
+- [ ] Rollback procedure documented
 
 ---
 
@@ -134,6 +163,13 @@ gh issue create --title "Business Ask: [Feature Name]" \
 **System Action**: Business Ask #53 marked as `ready-for-implementation`
 
 **Human Decision**: Assign to dev team, break into tasks, etc.
+
+**Definition of Done** (feature NOT complete until):
+- [ ] Code merged to main in ALL required repos (from PRD Section 2.2)
+- [ ] Deployed to ALL required environments (from PRD Section 2.1)
+- [ ] E2E tests pass in ALL environments × repos (from PRD Section 2.3)
+- [ ] Deployment matrix verified (all cells marked "Deployed" and "Pass")
+- [ ] See [workflow/DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md) for complete checklist
 
 ---
 
@@ -254,8 +290,20 @@ gh issue list --label "pm-pending,review-task" --state open
 - [ ] Update bot code in `.workflow-poc/phase1/`
 - [ ] Test complete workflow end-to-end
 - [ ] Document breaking changes in CHANGELOG
+- [ ] **Verify PRD includes deployment environments & repo matrix**
+- [ ] **Verify ERD includes E2E test implementation plan**
+- [ ] **Verify deployment matrix filled out (environments × repos × E2E tests)**
+- [ ] **Verify all E2E tests implemented and passing**
 
-**Rule**: Workflow changes are NOT done until documentation reflects current reality.
+**Rule**: Workflow changes are NOT done until:
+1. Documentation reflects current reality
+2. Deployed to all required environments × repos
+3. All E2E tests pass in deployment matrix
+
+**References**:
+- **PRD Template**: [workflow/PRD_TEMPLATE.md](PRD_TEMPLATE.md)
+- **ERD Checklist**: [.claude/brd-prd-erd-standards.md](../.claude/brd-prd-erd-standards.md#mandatory-erd-pre-flight-checklist)
+- **Definition of Done**: [workflow/DEFINITION_OF_DONE.md](DEFINITION_OF_DONE.md)
 
 ---
 
