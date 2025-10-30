@@ -175,5 +175,17 @@ PYTHON_SCRIPT
 # Capture Python script exit code
 GATE_RESULT=$?
 
+# ============================================================================
+# Optional Checklist Suggestion (if gates passed)
+# ============================================================================
+
+if [ $GATE_RESULT -eq 0 ] && [ -z "$SKIP_CHECKLIST_SUGGESTION" ]; then
+    echo ""
+    echo -e "${BLUE}💡 Optional: Review test quality before push${NC}"
+    echo "   Checklist: .claude/checklists/pre-push-review.md (2-3 min)"
+    echo "   Disable: export SKIP_CHECKLIST_SUGGESTION=1"
+    echo ""
+fi
+
 # Exit with same code
 exit $GATE_RESULT
